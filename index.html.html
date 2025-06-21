@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Endless Stickman Platformer</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #34495e; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; font-family: sans-serif; color: white;}
+        canvas { border: 2px solid black; background-color: #87CEEB; /* Sky Blue */ }
+        p { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <p>Use Arrow Keys to Move. Hold Spacebar longer to jump higher. Enter the castle gate to advance!</p>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const CANVAS_WIDTH = canvas.width;
+        const CANVAS_HEIGHT = canvas.height;
+
+        // --- Game World Constants ---
+        const PLATFORM_HEIGHT = 20;
+        const MIN_PLATFORM_WIDTH = 100;
+        const MAX_PLATFORM_WIDTH = 250;
+        const MIN_GAP_X = 80;
+        const MAX_GAP_X = 180;
+        const MIN_Y_LEVEL = 350;
+        const MAX_Y_LEVEL = 550;
+        
+        // --- Level Themes ---
+        const levelThemes = [
+            { fill: '#6B4226', stroke: '#2c3e50' }, // Classic Brown
+            { fill: '#78909C', stroke: '#37474F' }, // Stone Gray
+            { fill: '#B71C1C', stroke: '#4E0000' }, // Crimson Red
+            { fill: '#1B5E20', stroke: '#003300' }, // Forest Green
+            { fill: '#4A148C', stroke: '#1A0033' }, // Royal Purple
+            { fill: '#FF6F00', stroke: '#B35000' }, // Amber
+        ];
+
+        // --- Stickman Properties ---
+        const stickman = {
+            x: 150, y: 400, width: 25, height: 50,
+            vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5,
+            MOVE_SPEED: 5, isJumping: false, animationState: 'idle',
+            animationFrame: 0, animationSpeed: 5
+        };
+
+        // --- Game State ---
+        let platforms = [];
+        let clouds = []; // NEW: Array to hold cloud objects
+        let cameraX = 0;
+        let score = 0;
+        let farthestPlatformX = 0;
+        let castle = null;
+        let gameIsOver = false;
+        let currentLevel = 1;
+        let winScore = 1000;
+        let currentTheme;
+
+        // --- Game Setup and Reset ---
+        function resetGame() {
+            currentLevel = 1;
+            winScore = 1000;
+            cameraX = 0;
+            score = 0;
+            castle = null;
+            gameIsOver = false;
+            currentTheme = levelThemes[0];
+
+            stickman.x = 150; stickman.y = 400;
+            stickman.vx = 0; stickman.vy = 0;
+            stickman.isJumping = false; stickman.animationState = 'idle';
+
+            platforms = [];
+            const startPlatformWidth = 400;
+            platforms.push({ x: 0, y: 500, width: startPlatformWidth, height: PLATFORM_HEIGHT * 2 });
+            farthestPlatformX = startPlatformWidth;
+
+            // NEW: Initialize clouds
+            clouds = [];
+            for (let i = 0; i < 7; i++) { // Pre-populate some clouds
+                spawnCloud(true);
+            }
+
+            while (farthestPlatformX < CANVAS_WIDTH * 1.5) {
+                generateNewPlatform();
+            }
+        }
+
+        // --- NEW: Cloud Spawning ---
+        function spawnCloud(isInitial = false) {
+            const cloud = {
+                x: isInitial ? Math.random() * CANVAS_WIDTH : CANVAS_WIDTH + 100,
+                y: 50 + Math.random() * 200, // Clouds appear in the top half
+                radius: 30 + Math.random() * 30,
+                speed: 0.2 + Math.random() * 0.6 // Slower clouds seem farther away
+            };
+            clouds.push(cloud);
+        }
+
+        function startNextLevel() {
+            currentLevel++;
+            winScore = currentLevel * 1000;
+            
+            const oldTheme = currentTheme;
+            do {
+                currentTheme = levelThemes[Math.floor(Math.random() * levelThemes.length)];
+            } while (currentTheme === oldTheme && levelThemes.length > 1);
+            
+            stickman.x = castle.x + castle.width + 150;
+            stickman.y = 400;
+            stickman.vy = 0;
+            stickman.isJumping = false;
+
+            castle = null;
+            platforms = [];
+            gameIsOver = false;
+
+            const newStartPlatformWidth = 400;
+            platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 });
+            farthestPlatformX = stickman.x - 100 + newStartPlatformWidth;
+            cameraX = stickman.x - CANVAS_WIDTH / 4;
+        }
+
+        function spawnCastle() {
+            const castleX = winScore * 10;
+            const castleBaseY = MAX_Y_LEVEL;
+            const castleWidth = 300 + Math.random() * 150;
+            const mainKeepHeight = 150 + Math.random() * 100;
+            const leftTowerHeight = mainKeepHeight + 50 + Math.random() * 100;
+            const rightTowerHeight = mainKeepHeight + 50 + Math.random() * 100;
+            const leftTowerWidth = castleWidth * (0.25 + Math.random() * 0.1);
+            const rightTowerWidth = castleWidth * (0.25 + Math.random() * 0.1);
+            const keepX = castleX + leftTowerWidth;
+            const keepWidth = castleWidth - leftTowerWidth - rightTowerWidth;
+            const gateWidth = keepWidth * 0.4;
+            const gateHeight = mainKeepHeight * 0.6;
+            castle = {
+                x: castleX, y: castleBaseY, width: castleWidth,
+                mainKeep: { h: mainKeepHeight },
+                leftTower: { x: castleX, y: castleBaseY - leftTowerHeight, w: leftTowerWidth, h: leftTowerHeight },
+                rightTower: { x: castleX + castleWidth - rightTowerWidth, y: castleBaseY - rightTowerHeight, w: rightTowerWidth, h: rightTowerHeight },
+                gate: { x: keepX + (keepWidth - gateWidth) / 2, y: castleBaseY - gateHeight, w: gateWidth, h: gateHeight }
+            };
+            platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2 });
+            farthestPlatformX = castle.x + castle.width;
+        }
+
+        function generateNewPlatform() {
+            const width = Math.floor(Math.random() * (MAX_PLATFORM_WIDTH - MIN_PLATFORM_WIDTH + 1)) + MIN_PLATFORM_WIDTH;
+            const gap = Math.floor(Math.random() * (MAX_GAP_X - MIN_GAP_X + 1)) + MIN_GAP_X;
+            const x = farthestPlatformX + gap;
+            const y = Math.floor(Math.random() * (MAX_Y_LEVEL - MIN_Y_LEVEL + 1)) + MIN_Y_LEVEL;
+            platforms.push({ x, y, width, height: PLATFORM_HEIGHT });
+            farthestPlatformX = x + width;
+        }
+
+        // --- Drawing Functions ---
+        // NEW: Function to draw clouds
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; // White, slightly transparent
+            for (const cloud of clouds) {
+                ctx.beginPath();
+                // Create a fluffy cloud shape from 3 overlapping circles
+                ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+                ctx.arc(cloud.x - cloud.radius * 0.6, cloud.y + 5, cloud.radius * 0.7, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.radius * 0.7, cloud.y + 3, cloud.radius * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawStickman() {
+            ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
+            const centerX = stickman.x + stickman.width / 2, headY = stickman.y,
+                  bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
+            ctx.beginPath(); ctx.arc(centerX, headY, 10, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, bodyTopY); ctx.lineTo(centerX, bodyBottomY); ctx.stroke();
+            let legAngle = 0.5, armAngle = 0.5;
+            if (stickman.isJumping) { legAngle = 0.8; armAngle = 1.2; }
+            else if (stickman.animationState === 'walking') {
+                const framePos = (stickman.animationFrame / stickman.animationSpeed) * Math.PI * 2;
+                legAngle = Math.sin(framePos) * 0.8; armAngle = Math.sin(framePos) * -0.8;
+            }
+            ctx.beginPath(); ctx.moveTo(centerX, bodyBottomY); ctx.lineTo(centerX - 15 * Math.sin(legAngle), bodyBottomY + 15 * Math.cos(legAngle)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, bodyBottomY); ctx.lineTo(centerX + 15 * Math.sin(legAngle), bodyBottomY + 15 * Math.cos(legAngle)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX - 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX + 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke();
+        }
+        
+        function drawCastle() {
+            if (!castle) return;
+            ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
+            const keepX = castle.leftTower.x + castle.leftTower.w;
+            const keepY = castle.y - castle.mainKeep.h;
+            const keepW = castle.rightTower.x - keepX;
+            ctx.fillRect(keepX, keepY, keepW, castle.mainKeep.h); ctx.strokeRect(keepX, keepY, keepW, castle.mainKeep.h);
+            ctx.fillRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h); ctx.strokeRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h);
+            ctx.fillRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h); ctx.strokeRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h);
+            ctx.fillStyle = '#6B4226';
+            ctx.fillRect(castle.gate.x, castle.gate.y, castle.gate.w, castle.gate.h);
+        }
+
+        function drawPlatforms() {
+            ctx.fillStyle = currentTheme.fill; ctx.strokeStyle = currentTheme.stroke; ctx.lineWidth = 2;
+            for (const p of platforms) {
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.strokeRect(p.x, p.y, p.width, p.height);
+            }
+        }
+
+        function drawHUD() {
+            ctx.fillStyle = 'white';
+            ctx.font = '24px Arial Black';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.textAlign = 'right';
+            // REMOVED THE LINE ABOUT THE LEVEL AND GOAL
+            // ctx.fillText(`Level: ${currentLevel} (Goal: ${winScore})`, CANVAS_WIDTH - 10, 30);
+            ctx.fillText(`Level: ${currentLevel}`, CANVAS_WIDTH - 10, 30);
+        }
+
+        // --- Core Game Logic ---
+        function update() {
+            if (gameIsOver) return;
+
+            // --- NEW: Cloud Management ---
+            for (const cloud of clouds) {
+                cloud.x -= cloud.speed; // Move clouds to the left
+            }
+            // Remove clouds that have gone off-screen
+            clouds = clouds.filter(cloud => cloud.x + cloud.radius * 2 > 0);
+            // Randomly spawn new clouds
+            if (Math.random() < 0.007) {
+                spawnCloud();
+            }
+            
+            stickman.x += stickman.vx;
+            stickman.vy += stickman.GRAVITY;
+            stickman.y += stickman.vy;
+
+            for (const platform of platforms) {
+                if (stickman.vy >= 0 && (stickman.x + stickman.width) > platform.x && stickman.x < (platform.x + platform.width) && (stickman.y + stickman.height) >= platform.y && (stickman.y + stickman.height - stickman.vy) <= platform.y) {
+                    stickman.y = platform.y - stickman.height;
+                    stickman.vy = 0; stickman.isJumping = false;
+                    break;
+                }
+            }
+            
+            const cameraDeadzone = CANVAS_WIDTH / 3;
+            if (stickman.x > cameraX + cameraDeadzone * 1.5) {
+                cameraX = stickman.x - cameraDeadzone * 1.5;
+            }
+
+            platforms = platforms.filter(p => p.x + p.width > cameraX);
+            if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) {
+                generateNewPlatform();
+            }
+            
+            if (stickman.isJumping) { stickman.animationState = 'jumping'; }
+            else if (stickman.vx !== 0) { stickman.animationState = 'walking'; stickman.animationFrame++; }
+            else { stickman.animationState = 'idle'; stickman.animationFrame = 0; }
+            score = Math.max(score, Math.floor(stickman.x / 10));
+
+            if (score >= winScore && !castle) {
+                spawnCastle();
+            }
+
+            if (stickman.y > CANVAS_HEIGHT + 100) {
+                gameIsOver = true;
+                alert(`Game Over! Your score: ${score} on Level ${currentLevel}`);
+                resetGame();
+            }
+            
+            if (castle) {
+                const gate = castle.gate;
+                if (stickman.x < gate.x + gate.w &&
+                    stickman.x + stickman.width > gate.x &&
+                    stickman.y < gate.y + gate.h &&
+                    stickman.y + stickman.height > gate.y)
+                {
+                    gameIsOver = true;
+                    stickman.vx = 0;
+                    stickman.animationState = 'idle';
+                    setTimeout(() => { startNextLevel(); }, 500);
+                    return;
+                }
+            }
+        }
+
+        // --- Main Game Loop ---
+        function gameLoop() {
+            handleInput();
+            update();
+
+            // Clear the entire canvas
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // NEW: Draw background clouds first (they don't move with the camera)
+            drawClouds();
+
+            // Save context, move camera, draw world, then restore context
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+            drawPlatforms();
+            if (castle) drawCastle();
+            drawStickman();
+            ctx.restore();
+
+            // Draw HUD elements (like score) that don't scroll
+            drawHUD();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Input Handling ---
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            if (e.key === ' ' && !stickman.isJumping) {
+                e.preventDefault();
+                stickman.vy = stickman.JUMP_POWER;
+                stickman.isJumping = true;
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            if (e.key === ' ') {
+                if (stickman.vy < 0) {
+                    stickman.vy *= 0.5;
+                }
+            }
+        });
+
+        function handleInput() {
+            if (gameIsOver) { stickman.vx = 0; return; }
+            if (keys['ArrowLeft']) { stickman.vx = -stickman.MOVE_SPEED; }
+            else if (keys['ArrowRight']) { stickman.vx = stickman.MOVE_SPEED; }
+            else { stickman.vx = 0; }
+        }
+
+        // --- Start the game ---
+        resetGame();
+        gameLoop();
+    </script>
+</body>
+</html>
