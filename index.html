@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Endless Stickman Platformer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -14,8 +15,9 @@
             align-items: center;
             min-height: 100vh;
             flex-direction: column;
-            font-family: sans-serif;
+            font-family: 'Press Start 2P', sans-serif;
             color: white;
+            text-shadow: 2px 2px #000000;
         }
 
         canvas {
@@ -40,11 +42,12 @@
             padding: 15px 30px;
             background-color: rgba(255, 255, 255, 0.3);
             color: white;
-            border: none;
+            border: 2px solid black;
             border-radius: 5px;
             cursor: pointer;
             user-select: none;
             font-size: 1.2em;
+            font-family: 'Press Start 2P', sans-serif;
         }
 
         @media (min-width: 801px) {
@@ -63,18 +66,126 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
 
         #gameCanvas {
             max-width: 100%;
             max-height: 80%;
         }
+        
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 20;
+        }
+        
+        #gameOverScreen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ff4136;
+        }
+        
+        #gameOverScreen h2 {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+
+        #newHighScore {
+            margin-bottom: 20px;
+        }
+
+        #playerNameInput {
+            width: 250px;
+            padding: 10px;
+            font-family: 'Press Start 2P', sans-serif;
+            font-size: 1em;
+            text-align: center;
+            background: #222;
+            color: white;
+            border: 2px solid white;
+            text-transform: uppercase;
+        }
+
+        #saveScoreButton {
+             margin-top: 15px;
+             padding: 15px 30px;
+             font-size: 1em;
+             background: #0074d9;
+             border: 2px solid white;
+             color: white;
+             cursor: pointer;
+             font-family: 'Press Start 2P', sans-serif;
+        }
+        
+        #highScoreContainer h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        #highScoreList {
+            list-style-type: none;
+            padding: 0;
+            width: 350px;
+            font-size: 0.9em;
+        }
+        
+        #highScoreList li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        
+        #muteButton {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 15;
+            user-select: none;
+        }
+
     </style>
 </head>
 <body>
 
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <button id="muteButton">🔊</button>
+        <div id="gameOverScreen">
+            <h1>GAME OVER</h1>
+            <h2>YOUR SCORE: <span id="finalScore">0</span></h2>
+
+            <div id="newHighScore">
+                <label for="playerNameInput">NEW HIGH SCORE! ENTER NAME:</label><br><br>
+                <input type="text" id="playerNameInput" maxlength="10" placeholder="AAA">
+            </div>
+
+            <div id="highScoreContainer">
+                <h3>- LEADERBOARD -</h3>
+                <ol id="highScoreList"></ol>
+            </div>
+
+            <button id="saveScoreButton">PLAY AGAIN</button>
+        </div>
     </div>
 
 
@@ -84,9 +195,29 @@
         <button class="button" id="rightButton">→</button>
     </div>
 
+    <!-- --- AUDIO ELEMENTS --- -->
+    <audio id="bgMusic" loop src="https://raw.githubusercontent.com/0-skar/2/81989a14c120532cb7cc0a26c9c1378dcaca230d/pitupitu.mp3"></audio>
+    <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
+    <!-- The jump sound source has been updated to your newest link -->
+    <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
+
+
     <script>
+        // NO CHANGES TO THE JAVASCRIPT ARE NEEDED.
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreEl = document.getElementById('finalScore');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const saveScoreButton = document.getElementById('saveScoreButton');
+        const highScoreList = document.getElementById('highScoreList');
+        const newHighScoreDiv = document.getElementById('newHighScore');
+        
+        const muteButton = document.getElementById('muteButton');
+        const bgMusic = document.getElementById('bgMusic');
+        const gameOverSound = document.getElementById('gameOverSound');
+        const jumpSound = document.getElementById('jumpSound');
 
         const CANVAS_WIDTH = canvas.width;
         const CANVAS_HEIGHT = canvas.height;
@@ -99,13 +230,12 @@
         const MIN_Y_LEVEL = 350;
         const MAX_Y_LEVEL = 550;
 
+        const HIGH_SCORES_KEY = 'stickMobHighScores';
+
         const levelThemes = [
-            { fill: '#6B4226', stroke: '#2c3e50' },
-            { fill: '#78909C', stroke: '#37474F' },
-            { fill: '#B71C1C', stroke: '#4E0000' },
-            { fill: '#1B5E20', stroke: '#003300' },
-            { fill: '#4A148C', stroke: '#1A0033' },
-            { fill: '#FF6F00', stroke: '#B35000' },
+            { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' },
+            { fill: '#B71C1C', stroke: '#4E0000' }, { fill: '#1B5E20', stroke: '#003300' },
+            { fill: '#4A148C', stroke: '#1A0033' }, { fill: '#FF6F00', stroke: '#B35000' },
         ];
 
         const stickman = {
@@ -125,8 +255,84 @@
         let currentLevel = 1;
         let winScore = 1000;
         let currentTheme;
+        let highScores = [];
+
+        let isMusicStarted = false;
+        let isMuted = false;
+
+        function startMusicIfNeeded() {
+            if (!isMusicStarted && !isMuted) {
+                bgMusic.play().catch(e => console.error("Audio play failed:", e));
+                isMusicStarted = true;
+            }
+        }
+        
+        muteButton.addEventListener('click', () => {
+            isMuted = !isMuted;
+            bgMusic.muted = isMuted;
+            gameOverSound.muted = isMuted;
+            jumpSound.muted = isMuted;
+            muteButton.innerText = isMuted ? '🔇' : '🔊';
+        });
+
+
+        function loadHighScores() {
+            const scoresJSON = localStorage.getItem(HIGH_SCORES_KEY);
+            highScores = scoresJSON ? JSON.parse(scoresJSON) : [];
+        }
+        
+        function saveHighScore() {
+            const playerName = (playerNameInput.value.trim() || 'AAA').toUpperCase();
+            const newScore = { name: playerName, score: score };
+
+            highScores.push(newScore);
+            highScores.sort((a, b) => b.score - a.score);
+            highScores.splice(10); 
+
+            localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(highScores));
+        }
+
+        function showGameOverScreen() {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            gameOverSound.play().catch(e => console.error("Audio play failed:", e));
+
+            finalScoreEl.innerText = score;
+            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+
+            if (score > lowestHighScore) {
+                newHighScoreDiv.style.display = 'block';
+                saveScoreButton.innerText = 'SAVE & RESTART';
+                playerNameInput.value = '';
+                setTimeout(() => playerNameInput.focus(), 100);
+            } else {
+                newHighScoreDiv.style.display = 'none';
+                saveScoreButton.innerText = 'PLAY AGAIN';
+            }
+
+            highScoreList.innerHTML = highScores
+                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
+                .join('');
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        saveScoreButton.addEventListener('click', () => {
+             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+             if (score > lowestHighScore) {
+                 saveHighScore();
+             }
+             resetGame();
+        });
+
 
         function resetGame() {
+            gameOverSound.pause();
+            gameOverSound.currentTime = 0;
+            isMusicStarted = false;
+
+            loadHighScores();
+            gameOverScreen.style.display = 'none';
             currentLevel = 1;
             winScore = 1000;
             cameraX = 0;
@@ -186,6 +392,9 @@
             platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = stickman.x - 100 + newStartPlatformWidth;
             cameraX = stickman.x - CANVAS_WIDTH / 4;
+            
+            isMusicStarted = false; 
+            startMusicIfNeeded();
         }
 
         function spawnCastle() {
@@ -273,11 +482,11 @@
 
         function drawHUD() {
             ctx.fillStyle = 'white';
-            ctx.font = '24px Arial Black';
+            ctx.font = '20px "Press Start 2P"';
             ctx.textAlign = 'left';
-            ctx.fillText(`Score: ${score}`, 10, 30);
+            ctx.fillText(`Score:${score}`, 10, 30);
             ctx.textAlign = 'right';
-            ctx.fillText(`Level: ${currentLevel}`, CANVAS_WIDTH - 10, 30);
+            ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH - 60, 30);
         }
 
         function update() {
@@ -295,10 +504,12 @@
             stickman.vy += stickman.GRAVITY;
             stickman.y += stickman.vy;
 
+            let onPlatform = false;
             for (const platform of platforms) {
                 if (stickman.vy >= 0 && (stickman.x + stickman.width) > platform.x && stickman.x < (platform.x + platform.width) && (stickman.y + stickman.height) >= platform.y && (stickman.y + stickman.height - stickman.vy) <= platform.y) {
                     stickman.y = platform.y - stickman.height;
                     stickman.vy = 0; stickman.isJumping = false;
+                    onPlatform = true;
                     break;
                 }
             }
@@ -321,11 +532,10 @@
             if (score >= winScore && !castle) {
                 spawnCastle();
             }
-
+            
             if (stickman.y > CANVAS_HEIGHT + 100) {
                 gameIsOver = true;
-                alert(`Game Over! Your score: ${score} on Level ${currentLevel}`);
-                resetGame();
+                showGameOverScreen();
             }
 
             if (castle) {
@@ -343,21 +553,24 @@
             }
         }
 
-        function gameLoop() {
-            handleInput();
-            update();
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if(!gameIsOver) {
+                handleInput();
+                update();
+            }
 
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
             drawClouds();
-
             ctx.save();
             ctx.translate(-cameraX, 0);
             drawPlatforms();
             if (castle) drawCastle();
             drawStickman();
             ctx.restore();
-
             drawHUD();
 
             requestAnimationFrame(gameLoop);
@@ -365,11 +578,19 @@
 
         const keys = {};
         window.addEventListener('keydown', (e) => {
+            if (gameIsOver) {
+                if(e.key === 'Enter') saveScoreButton.click();
+                return;
+            };
             keys[e.key] = true;
             if (e.key === ' ' && !stickman.isJumping) {
                 e.preventDefault();
                 stickman.vy = stickman.JUMP_POWER;
                 stickman.isJumping = true;
+                startMusicIfNeeded();
+                
+                jumpSound.currentTime = 0;
+                jumpSound.play().catch(e => console.error("Jump sound failed", e));
             }
         });
         window.addEventListener('keyup', (e) => {
@@ -383,8 +604,14 @@
 
         function handleInput() {
             if (gameIsOver) { stickman.vx = 0; return; }
-            if (keys['ArrowLeft'] || keys['left']) { stickman.vx = -stickman.MOVE_SPEED; }
-            else if (keys['ArrowRight'] || keys['right']) { stickman.vx = stickman.MOVE_SPEED; }
+            if (keys['ArrowLeft'] || keys['a'] || keys['left']) { 
+                stickman.vx = -stickman.MOVE_SPEED; 
+                startMusicIfNeeded();
+            }
+            else if (keys['ArrowRight'] || keys['d'] || keys['right']) { 
+                stickman.vx = stickman.MOVE_SPEED;
+                startMusicIfNeeded();
+            }
             else { stickman.vx = 0; }
         }
 
@@ -394,16 +621,15 @@
 
         function buttonPress(buttonId, isPressed) {
             switch (buttonId) {
-                case 'leftButton':
-                    keys['left'] = isPressed;
-                    break;
-                case 'rightButton':
-                    keys['right'] = isPressed;
-                    break;
+                case 'leftButton': keys['left'] = isPressed; break;
+                case 'rightButton': keys['right'] = isPressed; break;
                 case 'jumpButton':
                     if (isPressed && !stickman.isJumping) {
                         stickman.vy = stickman.JUMP_POWER;
                         stickman.isJumping = true;
+                        
+                        jumpSound.currentTime = 0;
+                        jumpSound.play().catch(e => console.error("Jump sound failed", e));
                     }
                     break;
             }
@@ -411,26 +637,23 @@
         function handleTouch(event, buttonId, isPressed) {
             event.preventDefault();
             buttonPress(buttonId, isPressed);
+            startMusicIfNeeded();
         }
+        
+        ['touchstart', 'mousedown'].forEach(evt => {
+            leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', true));
+            rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', true));
+            jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', true));
+        });
 
-        leftButton.addEventListener('touchstart', (event) => handleTouch(event, 'leftButton', true));
-        leftButton.addEventListener('touchend', (event) => handleTouch(event, 'leftButton', false));
-        leftButton.addEventListener('touchcancel', (event) => handleTouch(event, 'leftButton', false));
-
-        rightButton.addEventListener('touchstart', (event) => handleTouch(event, 'rightButton', true));
-        rightButton.addEventListener('touchend', (event) => handleTouch(event, 'rightButton', false));
-        rightButton.addEventListener('touchcancel', (event) => handleTouch(event, 'rightButton', false));
-
-        jumpButton.addEventListener('touchstart', (event) => handleTouch(event, 'jumpButton', true));
-        jumpButton.addEventListener('touchend', (event) => handleTouch(event, 'jumpButton', false));
-        jumpButton.addEventListener('touchcancel', (event) => handleTouch(event, 'jumpButton', false));
-        jumpButton.addEventListener('mousedown', (event) => handleTouch(event, 'jumpButton', true));
-        jumpButton.addEventListener('mouseup', (event) => handleTouch(event, 'jumpButton', false));
-        jumpButton.addEventListener('mouseleave', (event) => handleTouch(event, 'jumpButton', false));
-
+        ['touchend', 'mouseup', 'touchcancel', 'mouseleave'].forEach(evt => {
+            leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', false));
+            rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', false));
+            jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false));
+        });
 
         resetGame();
-        gameLoop();
+        gameLoop(0);
     </script>
 </body>
 </html>
