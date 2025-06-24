@@ -308,7 +308,7 @@
         }
 
         async function loadHighScores() {
-            const apiUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${SCORES_FILE_PATH}`; // Or the correct branch name
+            const apiUrl = `https://raw.githubusercontent.com/${0-skar}/${2}/main/${scores.json}`; // Or the correct branch name
 
             try {
                 const response = await fetch(apiUrl);
@@ -341,7 +341,7 @@
         }
 
         async function updateScoresFileOnGitHub(scores) {
-            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${SCORES_FILE_PATH}`;
+            const apiUrl = `https://api.github.com/repos/${0-skar}/${2}/contents/${scores.json}`;
             const content = JSON.stringify(scores, null, 2); // Pretty print JSON
             const contentBase64 = btoa(unescape(encodeURIComponent(content))); // Encode to Base64
 
@@ -357,7 +357,7 @@
                 const response = await fetch(apiUrl, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Authorization': `token ${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}`,
                         'Content-Type': 'application/json',
                         'Accept': 'application/vnd.github.v3+json'
                     },
