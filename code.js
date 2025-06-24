@@ -1,1 +1,0 @@
-const SCORES_FILE_PATH = 'data/scores.json';
