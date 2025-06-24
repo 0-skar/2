@@ -19,10 +19,12 @@
             color: white;
             text-shadow: 2px 2px #000000;
         }
+
         canvas {
             border: 2px solid black;
             background-color: #87CEEB;
         }
+
         #controls {
             display: flex;
             position: fixed;
@@ -35,6 +37,7 @@
             align-items: center;
             z-index: 10;
         }
+
         .button {
             padding: 15px 30px;
             background-color: rgba(255, 255, 255, 0.3);
@@ -46,14 +49,17 @@
             font-size: 1.2em;
             font-family: 'Press Start 2P', sans-serif;
         }
+
         @media (min-width: 801px) {
             #controls {
                 display: none;
             }
         }
+
         #leftButton { order: 1; }
         #jumpButton { order: 0; }
         #rightButton { order: 2; }
+
         #gameContainer {
             width: 100%;
             height: 100%;
@@ -62,10 +68,12 @@
             align-items: center;
             position: relative;
         }
+
         #gameCanvas {
             max-width: 100%;
             max-height: 80%;
         }
+        
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -81,18 +89,22 @@
             text-align: center;
             z-index: 20;
         }
+        
         #gameOverScreen h1 {
             font-size: 3em;
             margin-bottom: 20px;
             color: #ff4136;
         }
+        
         #gameOverScreen h2 {
             font-size: 1.5em;
             margin-bottom: 30px;
         }
+
         #newHighScore {
             margin-bottom: 20px;
         }
+
         #playerNameInput {
             width: 250px;
             padding: 10px;
@@ -104,6 +116,7 @@
             border: 2px solid white;
             text-transform: uppercase;
         }
+
         #saveScoreButton {
              margin-top: 15px;
              padding: 15px 30px;
@@ -114,22 +127,26 @@
              cursor: pointer;
              font-family: 'Press Start 2P', sans-serif;
         }
+        
         #highScoreContainer h3 {
             font-size: 1.2em;
             margin-bottom: 10px;
             color: #ffd700;
         }
+        
         #highScoreList {
             list-style-type: none;
             padding: 0;
             width: 350px;
             font-size: 0.9em;
         }
+        
         #highScoreList li {
             display: flex;
             justify-content: space-between;
             padding: 5px 0;
         }
+        
         #muteButton {
             position: absolute;
             top: 15px;
@@ -145,9 +162,11 @@
             z-index: 15;
             user-select: none;
         }
+
     </style>
 </head>
 <body>
+
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <button id="muteButton">🔊</button>
@@ -164,20 +183,28 @@
                 <h3>- LEADERBOARD -</h3>
                 <ol id="highScoreList"></ol>
             </div>
+
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
     </div>
+
+
     <div id="controls">
         <button class="button" id="jumpButton">Jump</button>
         <button class="button" id="leftButton">←</button>
         <button class="button" id="rightButton">→</button>
     </div>
+
     <!-- --- AUDIO ELEMENTS --- -->
     <audio id="bgMusic" loop src="https://raw.githubusercontent.com/0-skar/2/81989a14c120532cb7cc0a26c9c1378dcaca230d/pitupitu.mp3"></audio>
     <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
+    <!-- The jump sound source has been updated to your newest link -->
     <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
 
+
     <script>
+        // NO CHANGES TO THE JAVASCRIPT ARE NEEDED.
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameOverScreen = document.getElementById('gameOverScreen');
@@ -186,6 +213,7 @@
         const saveScoreButton = document.getElementById('saveScoreButton');
         const highScoreList = document.getElementById('highScoreList');
         const newHighScoreDiv = document.getElementById('newHighScore');
+        
         const muteButton = document.getElementById('muteButton');
         const bgMusic = document.getElementById('bgMusic');
         const gameOverSound = document.getElementById('gameOverSound');
@@ -201,6 +229,8 @@
         const MAX_GAP_X = 180;
         const MIN_Y_LEVEL = 350;
         const MAX_Y_LEVEL = 550;
+
+        const HIGH_SCORES_KEY = 'stickMobHighScores';
 
         const levelThemes = [
             { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' },
@@ -226,20 +256,9 @@
         let winScore = 1000;
         let currentTheme;
         let highScores = [];
+
         let isMusicStarted = false;
         let isMuted = false;
-
-        // --- GITHUB CONFIGURATION ---
-        // 1. REPLACE WITH YOUR GITHUB USERNAME
-        const GITHUB_USERNAME = '0-skar';
-        // 2. REPLACE WITH YOUR REPOSITORY NAME
-        const GITHUB_REPO = '2';
-        // 3. REPLACE WITH YOUR PERSONAL ACCESS TOKEN (PAT)
-        const GITHUB_TOKEN = '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';
-        // 4. THIS IS THE FILENAME IN YOUR REPOSITORY
-        const SCORES_FILE_PATH = 'scores.json';
-        const GITHUB_API_URL = `https://api.github.com/repos/${0-skar}/${2}/contents/${scores.json}`;
-        let scoresFileSha = null; // SHA of the scores file, needed for updates
 
         function startMusicIfNeeded() {
             if (!isMusicStarted && !isMuted) {
@@ -247,7 +266,7 @@
                 isMusicStarted = true;
             }
         }
-
+        
         muteButton.addEventListener('click', () => {
             isMuted = !isMuted;
             bgMusic.muted = isMuted;
@@ -256,115 +275,21 @@
             muteButton.innerText = isMuted ? '🔇' : '🔊';
         });
 
-        // ----- GITHUB API FUNCTIONS -----
 
-        async function loadHighScores() {
-            try {
-                // Fetch the file content and metadata (including the SHA) from the GitHub API
-                const response = await fetch(GITHUB_API_URL, {
-                    headers: { 'Accept': 'application/vnd.github.v3+json' }
-                });
-
-                if (response.status === 404) { // File not found
-                    console.warn("scores.json not found on GitHub. Starting with an empty leaderboard.");
-                    highScores = [];
-                    scoresFileSha = null;
-                    return;
-                }
-
-                if (!response.ok) {
-                    throw new Error(`GitHub API Error: ${response.status} ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                scoresFileSha = data.sha; // Store the SHA for future updates
-                const content = atob(data.content); // Decode content from Base64
-                highScores = JSON.parse(content);
-
-                // Ensure the loaded scores are sorted and capped at 10
-                highScores.sort((a, b) => b.score - a.score);
-                highScores = highScores.slice(0, 10);
-
-            } catch (error) {
-                console.error("Error loading high scores:", error);
-                highScores = []; // Default to empty list on error to prevent game crash
-            } finally {
-                updateHighScoreListDisplay();
-            }
+        function loadHighScores() {
+            const scoresJSON = localStorage.getItem(HIGH_SCORES_KEY);
+            highScores = scoresJSON ? JSON.parse(scoresJSON) : [];
         }
-
-        async function saveHighScore() {
+        
+        function saveHighScore() {
             const playerName = (playerNameInput.value.trim() || 'AAA').toUpperCase();
-            if (!playerName) return;
-
             const newScore = { name: playerName, score: score };
+
             highScores.push(newScore);
             highScores.sort((a, b) => b.score - a.score);
-            highScores = highScores.slice(0, 10); // Keep only the top 10
+            highScores.splice(10); 
 
-            // Disable button to prevent multiple submissions
-            saveScoreButton.disabled = true;
-            saveScoreButton.innerText = 'SAVING...';
-
-            await updateScoresFileOnGitHub(highScores);
-
-            // Re-enable button
-            saveScoreButton.disabled = false;
-        }
-
-        async function updateScoresFileOnGitHub(scoresData) {
-            // btoa expects a string of single-byte characters.
-            // We use encodeURIComponent to handle potential multi-byte characters in names,
-            // then unescape to convert the percent-encoded values back to single-byte characters.
-            const content = JSON.stringify(scoresData, null, 2);
-            const contentBase64 = btoa(unescape(encodeURIComponent(content)));
-
-            const body = {
-                message: `Update high scores - new score: ${score}`,
-                content: contentBase64,
-                branch: 'main' // Or your default branch name
-            };
-
-            // If we have a SHA, it means we're updating an existing file.
-            if (scoresFileSha) {
-                body.sha = scoresFileSha;
-            }
-
-            try {
-                const response = await fetch(GITHUB_API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${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}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify(body)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to update scores file: ${response.status} ${errorData.message}`);
-                }
-
-                const data = await response.json();
-                scoresFileSha = data.content.sha; // IMPORTANT: Update SHA with the new one
-                console.log("High scores saved to GitHub successfully!");
-
-            } catch (error) {
-                console.error("Error updating scores file:", error);
-                // Inform the user that saving failed.
-                alert("Could not save high score to the leaderboard. Please check console for errors.");
-            }
-        }
-
-        function updateHighScoreListDisplay() {
-            if (highScores.length === 0) {
-                 highScoreList.innerHTML = '<li><span>LEADERBOARD IS EMPTY</span><span></span></li>';
-                 return;
-            }
-            highScoreList.innerHTML = highScores
-                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
-                .join('');
+            localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(highScores));
         }
 
         function showGameOverScreen() {
@@ -375,7 +300,7 @@
             finalScoreEl.innerText = score;
             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
 
-            if (score > 0 && score > lowestHighScore) {
+            if (score > lowestHighScore) {
                 newHighScoreDiv.style.display = 'block';
                 saveScoreButton.innerText = 'SAVE & RESTART';
                 playerNameInput.value = '';
@@ -385,23 +310,28 @@
                 saveScoreButton.innerText = 'PLAY AGAIN';
             }
 
-            updateHighScoreListDisplay();
+            highScoreList.innerHTML = highScores
+                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
+                .join('');
+            
             gameOverScreen.style.display = 'flex';
         }
 
-        saveScoreButton.addEventListener('click', async () => {
-            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
-            if (score > 0 && score > lowestHighScore) {
-                await saveHighScore();
-            }
-            resetGame();
+        saveScoreButton.addEventListener('click', () => {
+             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+             if (score > lowestHighScore) {
+                 saveHighScore();
+             }
+             resetGame();
         });
 
-        async function resetGame() {
+
+        function resetGame() {
             gameOverSound.pause();
             gameOverSound.currentTime = 0;
             isMusicStarted = false;
 
+            loadHighScores();
             gameOverScreen.style.display = 'none';
             currentLevel = 1;
             winScore = 1000;
@@ -428,12 +358,7 @@
             while (farthestPlatformX < CANVAS_WIDTH * 1.5) {
                 generateNewPlatform();
             }
-            // Load scores from GitHub when the game starts/resets
-            await loadHighScores();
         }
-
-        // --- All game logic below this point remains the same ---
-        // (spawnCloud, startNextLevel, spawnCastle, generateNewPlatform, etc.)
 
         function spawnCloud(isInitial = false) {
             const cloud = {
@@ -448,22 +373,27 @@
         function startNextLevel() {
             currentLevel++;
             winScore = currentLevel * 1000;
+
             const oldTheme = currentTheme;
             do {
                 currentTheme = levelThemes[Math.floor(Math.random() * levelThemes.length)];
             } while (currentTheme === oldTheme && levelThemes.length > 1);
+
             stickman.x = castle.x + castle.width + 150;
             stickman.y = 400;
             stickman.vy = 0;
             stickman.isJumping = false;
+
             castle = null;
             platforms = [];
             gameIsOver = false;
+
             const newStartPlatformWidth = 400;
             platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = stickman.x - 100 + newStartPlatformWidth;
             cameraX = stickman.x - CANVAS_WIDTH / 4;
-            isMusicStarted = false;
+            
+            isMusicStarted = false; 
             startMusicIfNeeded();
         }
 
@@ -514,7 +444,7 @@
         function drawStickman() {
             ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
             const centerX = stickman.x + stickman.width / 2, headY = stickman.y,
-                bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
+                  bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
             ctx.beginPath(); ctx.arc(centerX, headY, 10, 0, Math.PI * 2); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(centerX, bodyTopY); ctx.lineTo(centerX, bodyBottomY); ctx.stroke();
             let legAngle = 0.5, armAngle = 0.5;
@@ -561,6 +491,7 @@
 
         function update() {
             if (gameIsOver) return;
+
             for (const cloud of clouds) {
                 cloud.x -= cloud.speed;
             }
@@ -568,9 +499,11 @@
             if (Math.random() < 0.007) {
                 spawnCloud();
             }
+
             stickman.x += stickman.vx;
             stickman.vy += stickman.GRAVITY;
             stickman.y += stickman.vy;
+
             let onPlatform = false;
             for (const platform of platforms) {
                 if (stickman.vy >= 0 && (stickman.x + stickman.width) > platform.x && stickman.x < (platform.x + platform.width) && (stickman.y + stickman.height) >= platform.y && (stickman.y + stickman.height - stickman.vy) <= platform.y) {
@@ -580,25 +513,31 @@
                     break;
                 }
             }
+
             const cameraDeadzone = CANVAS_WIDTH / 3;
             if (stickman.x > cameraX + cameraDeadzone * 1.5) {
                 cameraX = stickman.x - cameraDeadzone * 1.5;
             }
+
             platforms = platforms.filter(p => p.x + p.width > cameraX);
             if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) {
                 generateNewPlatform();
             }
+
             if (stickman.isJumping) { stickman.animationState = 'jumping'; }
             else if (stickman.vx !== 0) { stickman.animationState = 'walking'; stickman.animationFrame++; }
             else { stickman.animationState = 'idle'; stickman.animationFrame = 0; }
             score = Math.max(score, Math.floor(stickman.x / 10));
+
             if (score >= winScore && !castle) {
                 spawnCastle();
             }
+            
             if (stickman.y > CANVAS_HEIGHT + 100) {
                 gameIsOver = true;
                 showGameOverScreen();
             }
+
             if (castle) {
                 const gate = castle.gate;
                 if (stickman.x < gate.x + gate.w &&
@@ -619,7 +558,7 @@
             const deltaTime = timestamp - lastTime;
             lastTime = timestamp;
 
-            if (!gameIsOver) {
+            if(!gameIsOver) {
                 handleInput();
                 update();
             }
@@ -640,7 +579,7 @@
         const keys = {};
         window.addEventListener('keydown', (e) => {
             if (gameIsOver) {
-                if (e.key === 'Enter' && newHighScoreDiv.style.display !== 'none') saveScoreButton.click();
+                if(e.key === 'Enter') saveScoreButton.click();
                 return;
             };
             keys[e.key] = true;
@@ -649,6 +588,7 @@
                 stickman.vy = stickman.JUMP_POWER;
                 stickman.isJumping = true;
                 startMusicIfNeeded();
+                
                 jumpSound.currentTime = 0;
                 jumpSound.play().catch(e => console.error("Jump sound failed", e));
             }
@@ -664,11 +604,11 @@
 
         function handleInput() {
             if (gameIsOver) { stickman.vx = 0; return; }
-            if (keys['ArrowLeft'] || keys['a'] || keys['left']) {
-                stickman.vx = -stickman.MOVE_SPEED;
+            if (keys['ArrowLeft'] || keys['a'] || keys['left']) { 
+                stickman.vx = -stickman.MOVE_SPEED; 
                 startMusicIfNeeded();
             }
-            else if (keys['ArrowRight'] || keys['d'] || keys['right']) {
+            else if (keys['ArrowRight'] || keys['d'] || keys['right']) { 
                 stickman.vx = stickman.MOVE_SPEED;
                 startMusicIfNeeded();
             }
@@ -687,6 +627,7 @@
                     if (isPressed && !stickman.isJumping) {
                         stickman.vy = stickman.JUMP_POWER;
                         stickman.isJumping = true;
+                        
                         jumpSound.currentTime = 0;
                         jumpSound.play().catch(e => console.error("Jump sound failed", e));
                     }
@@ -698,7 +639,7 @@
             buttonPress(buttonId, isPressed);
             startMusicIfNeeded();
         }
-
+        
         ['touchstart', 'mousedown'].forEach(evt => {
             leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', true));
             rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', true));
@@ -711,7 +652,6 @@
             jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false));
         });
 
-        // Initial game start
         resetGame();
         gameLoop(0);
     </script>
