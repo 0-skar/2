@@ -6,26 +6,163 @@
     <title>Endless Stickman Platformer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background-color: #34495e; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; font-family: 'Press Start 2P', sans-serif; color: white; text-shadow: 2px 2px #000000; }
-        canvas { border: 2px solid black; background-color: #87CEEB; }
-        #controls { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; background-color: rgba(0, 0, 0, 0.2); justify-content: space-around; align-items: center; z-index: 10; }
-        .button { padding: 15px 30px; background-color: rgba(255, 255, 255, 0.3); color: white; border: 2px solid black; border-radius: 5px; cursor: pointer; user-select: none; font-size: 1.2em; font-family: 'Press Start 2P', sans-serif; }
-        @media (min-width: 801px) { #controls { display: none; } }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #34495e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            font-family: 'Press Start 2P', sans-serif;
+            color: white;
+            text-shadow: 2px 2px #000000;
+        }
+
+        canvas {
+            border: 2px solid black;
+            background-color: #87CEEB;
+        }
+
+        #controls {
+            display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background-color: rgba(0, 0, 0, 0.2);
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .button {
+            padding: 15px 30px;
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 2px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1.2em;
+            font-family: 'Press Start 2P', sans-serif;
+        }
+
+        @media (min-width: 801px) {
+            #controls {
+                display: none;
+            }
+        }
+
         #leftButton { order: 1; }
         #jumpButton { order: 0; }
         #rightButton { order: 2; }
-        #gameContainer { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
-        #gameCanvas { max-width: 100%; max-height: 80%; }
-        #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 20; }
-        #gameOverScreen h1 { font-size: 3em; margin-bottom: 20px; color: #ff4136; }
-        #gameOverScreen h2 { font-size: 1.5em; margin-bottom: 30px; }
-        #newHighScore { margin-bottom: 20px; }
-        #playerNameInput { width: 250px; padding: 10px; font-family: 'Press Start 2P', sans-serif; font-size: 1em; text-align: center; background: #222; color: white; border: 2px solid white; text-transform: uppercase; }
-        #saveScoreButton { margin-top: 15px; padding: 15px 30px; font-size: 1em; background: #0074d9; border: 2px solid white; color: white; cursor: pointer; font-family: 'Press Start 2P', sans-serif; }
-        #highScoreContainer h3 { font-size: 1.2em; margin-bottom: 10px; color: #ffd700; }
-        #highScoreList { list-style-type: none; padding: 0; width: 350px; font-size: 0.9em; }
-        #highScoreList li { display: flex; justify-content: space-between; padding: 5px 0; }
-        #muteButton { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.3); color: white; border: 2px solid white; border-radius: 5px; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 15; user-select: none; }
+
+        #gameContainer {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #gameCanvas {
+            max-width: 100%;
+            max-height: 80%;
+        }
+
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 20;
+        }
+
+        #gameOverScreen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ff4136;
+        }
+
+        #gameOverScreen h2 {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+
+        #newHighScore {
+            margin-bottom: 20px;
+        }
+
+        #playerNameInput {
+            width: 250px;
+            padding: 10px;
+            font-family: 'Press Start 2P', sans-serif;
+            font-size: 1em;
+            text-align: center;
+            background: #222;
+            color: white;
+            border: 2px solid white;
+            text-transform: uppercase;
+        }
+
+        #saveScoreButton {
+             margin-top: 15px;
+             padding: 15px 30px;
+             font-size: 1em;
+             background: #0074d9;
+             border: 2px solid white;
+             color: white;
+             cursor: pointer;
+             font-family: 'Press Start 2P', sans-serif;
+        }
+
+        #highScoreContainer h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+
+        #highScoreList {
+            list-style-type: none;
+            padding: 0;
+            width: 350px;
+            font-size: 0.9em;
+        }
+
+        #highScoreList li {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        #muteButton {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 15;
+            user-select: none;
+        }
+
     </style>
 </head>
 <body>
@@ -36,17 +173,21 @@
         <div id="gameOverScreen">
             <h1>GAME OVER</h1>
             <h2>YOUR SCORE: <span id="finalScore">0</span></h2>
+
             <div id="newHighScore">
                 <label for="playerNameInput">NEW HIGH SCORE! ENTER NAME:</label><br><br>
                 <input type="text" id="playerNameInput" maxlength="10" placeholder="AAA">
             </div>
+
             <div id="highScoreContainer">
                 <h3>- LEADERBOARD -</h3>
                 <ol id="highScoreList"></ol>
             </div>
+
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
     </div>
+
 
     <div id="controls">
         <button class="button" id="jumpButton">Jump</button>
@@ -54,11 +195,17 @@
         <button class="button" id="rightButton">→</button>
     </div>
 
+    <!-- --- AUDIO ELEMENTS --- -->
     <audio id="bgMusic" loop src="https://raw.githubusercontent.com/0-skar/2/81989a14c120532cb7cc0a26c9c1378dcaca230d/pitupitu.mp3"></audio>
     <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
+    <!-- The jump sound source has been updated to your newest link -->
     <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
 
+
     <script>
+        // Modified to use server-side scores
+        const API_ENDPOINT = 'http://localhost:3000'; // IMPORTANT: Match your server address and port
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameOverScreen = document.getElementById('gameOverScreen');
@@ -67,12 +214,15 @@
         const saveScoreButton = document.getElementById('saveScoreButton');
         const highScoreList = document.getElementById('highScoreList');
         const newHighScoreDiv = document.getElementById('newHighScore');
+
         const muteButton = document.getElementById('muteButton');
         const bgMusic = document.getElementById('bgMusic');
         const gameOverSound = document.getElementById('gameOverSound');
         const jumpSound = document.getElementById('jumpSound');
+
         const CANVAS_WIDTH = canvas.width;
         const CANVAS_HEIGHT = canvas.height;
+
         const PLATFORM_HEIGHT = 20;
         const MIN_PLATFORM_WIDTH = 100;
         const MAX_PLATFORM_WIDTH = 250;
@@ -80,8 +230,20 @@
         const MAX_GAP_X = 180;
         const MIN_Y_LEVEL = 350;
         const MAX_Y_LEVEL = 550;
-        const levelThemes = [ { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' }, { fill: '#B71C1C', stroke: '#4E0000' }, { fill: '#1B5E20', stroke: '#003300' }, { fill: '#4A148C', stroke: '#1A0033' }, { fill: '#FF6F00', stroke: '#B35000' }, ];
-        const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, animationState: 'idle', animationFrame: 0, animationSpeed: 5 };
+
+        const levelThemes = [
+            { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' },
+            { fill: '#B71C1C', stroke: '#4E0000' }, { fill: '#1B5E20', stroke: '#003300' },
+            { fill: '#4A148C', stroke: '#1A0033' }, { fill: '#FF6F00', stroke: '#B35000' },
+        ];
+
+        const stickman = {
+            x: 150, y: 400, width: 25, height: 50,
+            vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5,
+            MOVE_SPEED: 5, isJumping: false, animationState: 'idle',
+            animationFrame: 0, animationSpeed: 5
+        };
+
         let platforms = [];
         let clouds = [];
         let cameraX = 0;
@@ -93,71 +255,62 @@
         let winScore = 1000;
         let currentTheme;
         let highScores = [];
+
         let isMusicStarted = false;
         let isMuted = false;
 
-        // --- MODIFICATION START: SERVER COMMUNICATION SETUP ---
-
-        // This is the URL where your Node.js server is running.
-        // For local testing, 'http://localhost:3000' is correct.
-        // When you deploy, you'll change this to your server's public address.
-        const SERVER_URL = 'http://localhost:3000';
-
-        /**
-         * Fetches the latest high scores from the server.
-         */
-        async function loadHighScores() {
-            try {
-                const response = await fetch(`${SERVER_URL}/get-scores`);
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok: ${response.statusText}`);
-                }
-                highScores = await response.json();
-            } catch (error) {
-                console.error("Could not fetch high scores:", error);
-                // If the server is offline, use a default fallback list.
-                highScores = [
-                    { name: 'OFFLINE', score: 500 },
-                    { name: 'MODE', score: 100 }
-                ];
+        function startMusicIfNeeded() {
+            if (!isMusicStarted && !isMuted) {
+                bgMusic.play().catch(e => console.error("Audio play failed:", e));
+                isMusicStarted = true;
             }
         }
-        
-        /**
-         * Sends a new high score to the server to be saved.
-         */
-        async function saveHighScore() {
+
+        muteButton.addEventListener('click', () => {
+            isMuted = !isMuted;
+            bgMusic.muted = isMuted;
+            gameOverSound.muted = isMuted;
+            jumpSound.muted = isMuted;
+            muteButton.innerText = isMuted ? '🔇' : '🔊';
+        });
+
+        function loadHighScores() {
+            //No implementation because we are getting the data from the server
+        }
+
+        function saveHighScore() {
             const playerName = (playerNameInput.value.trim() || 'AAA').toUpperCase();
             const newScore = { name: playerName, score: score };
 
-            try {
-                await fetch(`${SERVER_URL}/submit-score`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(newScore),
-                });
-                console.log("Score sent to server for saving.");
-            } catch (error) {
-                console.error("Failed to send score to server:", error);
-                // We don't need to do anything else here; the game will just restart.
-            }
+            fetch(`${API_ENDPOINT}/submit-score`, {  // Use the API endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newScore)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Score saved:', data);
+                loadHighScoresFromServer();  // Reload scores from server after saving
+            })
+            .catch(error => console.error('Error saving score:', error));
         }
 
-        /**
-         * When the game ends, shows the game over screen and the fetched leaderboard.
-         */
         function showGameOverScreen() {
             bgMusic.pause();
             bgMusic.currentTime = 0;
             gameOverSound.play().catch(e => console.error("Audio play failed:", e));
 
             finalScoreEl.innerText = score;
+            const lowestHighScore = highScores.length < 10 && highScores.length > 0 ? highScores[highScores.length - 1].score : 0;
 
-            // Check if the current score is high enough to make the leaderboard
-            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
-            if (score > lowestHighScore) {
+            if (score > lowestHighScore || highScores.length < 10) {
                 newHighScoreDiv.style.display = 'block';
                 saveScoreButton.innerText = 'SAVE & RESTART';
                 playerNameInput.value = '';
@@ -167,36 +320,25 @@
                 saveScoreButton.innerText = 'PLAY AGAIN';
             }
 
-            // Populate the leaderboard list on the game over screen
-            highScoreList.innerHTML = highScores
-                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
-                .join('');
-            
+            displayHighScores(); // Display the high scores after getting the information from server
             gameOverScreen.style.display = 'flex';
         }
 
-        /**
-         * Handles the click on the main button on the game over screen.
-         * It saves the score if necessary, then resets the game.
-         */
-        saveScoreButton.addEventListener('click', async () => {
-             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
-             if (score > lowestHighScore) {
-                 await saveHighScore(); // Wait for the score to be sent
-             }
-             await resetGame(); // Wait for the game to reset (which includes fetching new scores)
+        saveScoreButton.addEventListener('click', () => {
+            const lowestHighScore = highScores.length < 10 && highScores.length > 0 ? highScores[highScores.length - 1].score : 0;
+            if (score > lowestHighScore || highScores.length < 10) {
+                saveHighScore();
+            } else {
+              resetGame();
+            }
         });
 
-        /**
-         * Resets the entire game state for a new round.
-         */
-        async function resetGame() {
+        function resetGame() {
             gameOverSound.pause();
             gameOverSound.currentTime = 0;
             isMusicStarted = false;
 
-            await loadHighScores(); // IMPORTANT: Wait for scores to load before continuing
-            
+            loadHighScoresFromServer();
             gameOverScreen.style.display = 'none';
             currentLevel = 1;
             winScore = 1000;
@@ -205,47 +347,340 @@
             castle = null;
             gameIsOver = false;
             currentTheme = levelThemes[0];
-            stickman.x = 150; stickman.y = 400; stickman.vx = 0; stickman.vy = 0; stickman.isJumping = false; stickman.animationState = 'idle';
+
+            stickman.x = 150; stickman.y = 400;
+            stickman.vx = 0; stickman.vy = 0;
+            stickman.isJumping = false; stickman.animationState = 'idle';
+
             platforms = [];
             const startPlatformWidth = 400;
             platforms.push({ x: 0, y: 500, width: startPlatformWidth, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = startPlatformWidth;
+
             clouds = [];
-            for (let i = 0; i < 7; i++) { spawnCloud(true); }
-            while (farthestPlatformX < CANVAS_WIDTH * 1.5) { generateNewPlatform(); }
+            for (let i = 0; i < 7; i++) {
+                spawnCloud(true);
+            }
+
+            while (farthestPlatformX < CANVAS_WIDTH * 1.5) {
+                generateNewPlatform();
+            }
         }
 
-        // --- END OF MODIFICATIONS ---
+        function loadHighScoresFromServer() {
+            fetch(`${API_ENDPOINT}/get-scores`) // Use the API endpoint
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    highScores = data;
+                    displayHighScores();
+                })
+                .catch(error => console.error('Error loading high scores:', error));
+        }
 
+        function displayHighScores() {
+            highScoreList.innerHTML = highScores
+                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
+                .join('');
+        }
 
-        function startMusicIfNeeded() { if (!isMusicStarted && !isMuted) { bgMusic.play().catch(e => console.error("Audio play failed:", e)); isMusicStarted = true; } }
-        muteButton.addEventListener('click', () => { isMuted = !isMuted; bgMusic.muted = isMuted; gameOverSound.muted = isMuted; jumpSound.muted = isMuted; muteButton.innerText = isMuted ? '🔇' : '🔊'; });
-        function spawnCloud(isInitial = false) { const cloud = { x: isInitial ? Math.random() * CANVAS_WIDTH : CANVAS_WIDTH + 100, y: 50 + Math.random() * 200, radius: 30 + Math.random() * 30, speed: 0.2 + Math.random() * 0.6 }; clouds.push(cloud); }
-        function startNextLevel() { currentLevel++; winScore = currentLevel * 1000; const oldTheme = currentTheme; do { currentTheme = levelThemes[Math.floor(Math.random() * levelThemes.length)]; } while (currentTheme === oldTheme && levelThemes.length > 1); stickman.x = castle.x + castle.width + 150; stickman.y = 400; stickman.vy = 0; stickman.isJumping = false; castle = null; platforms = []; gameIsOver = false; const newStartPlatformWidth = 400; platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 }); farthestPlatformX = stickman.x - 100 + newStartPlatformWidth; cameraX = stickman.x - CANVAS_WIDTH / 4; isMusicStarted = false; startMusicIfNeeded(); }
-        function spawnCastle() { const castleX = winScore * 10; const castleBaseY = MAX_Y_LEVEL; const castleWidth = 300 + Math.random() * 150; const mainKeepHeight = 150 + Math.random() * 100; const leftTowerHeight = mainKeepHeight + 50 + Math.random() * 100; const rightTowerHeight = mainKeepHeight + 50 + Math.random() * 100; const leftTowerWidth = castleWidth * (0.25 + Math.random() * 0.1); const rightTowerWidth = castleWidth * (0.25 + Math.random() * 0.1); const keepX = castleX + leftTowerWidth; const keepWidth = castleWidth - leftTowerWidth - rightTowerWidth; const gateWidth = keepWidth * 0.4; const gateHeight = mainKeepHeight * 0.6; castle = { x: castleX, y: castleBaseY, width: castleWidth, mainKeep: { h: mainKeepHeight }, leftTower: { x: castleX, y: castleBaseY - leftTowerHeight, w: leftTowerWidth, h: leftTowerHeight }, rightTower: { x: castleX + castleWidth - rightTowerWidth, y: castleBaseY - rightTowerHeight, w: rightTowerWidth, h: rightTowerHeight }, gate: { x: keepX + (keepWidth - gateWidth) / 2, y: castleBaseY - gateHeight, w: gateWidth, h: gateHeight } }; platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2 }); farthestPlatformX = castle.x + castle.width; }
-        function generateNewPlatform() { const width = Math.floor(Math.random() * (MAX_PLATFORM_WIDTH - MIN_PLATFORM_WIDTH + 1)) + MIN_PLATFORM_WIDTH; const gap = Math.floor(Math.random() * (MAX_GAP_X - MIN_GAP_X + 1)) + MIN_GAP_X; const x = farthestPlatformX + gap; const y = Math.floor(Math.random() * (MAX_Y_LEVEL - MIN_Y_LEVEL + 1)) + MIN_Y_LEVEL; platforms.push({ x, y, width, height: PLATFORM_HEIGHT }); farthestPlatformX = x + width; }
-        function drawClouds() { ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; for (const cloud of clouds) { ctx.beginPath(); ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2); ctx.arc(cloud.x - cloud.radius * 0.6, cloud.y + 5, cloud.radius * 0.7, 0, Math.PI * 2); ctx.arc(cloud.x + cloud.radius * 0.7, cloud.y + 3, cloud.radius * 0.8, 0, Math.PI * 2); ctx.fill(); } }
-        function drawStickman() { ctx.strokeStyle = 'black'; ctx.lineWidth = 3; const centerX = stickman.x + stickman.width / 2, headY = stickman.y, bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5; ctx.beginPath(); ctx.arc(centerX, headY, 10, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(centerX, bodyTopY); ctx.lineTo(centerX, bodyBottomY); ctx.stroke(); let legAngle = 0.5, armAngle = 0.5; if (stickman.isJumping) { legAngle = 0.8; armAngle = 1.2; } else if (stickman.animationState === 'walking') { const framePos = (stickman.animationFrame / stickman.animationSpeed) * Math.PI * 2; legAngle = Math.sin(framePos) * 0.8; armAngle = Math.sin(framePos) * -0.8; } ctx.beginPath(); ctx.moveTo(centerX, bodyBottomY); ctx.lineTo(centerX - 15 * Math.sin(legAngle), bodyBottomY + 15 * Math.cos(legAngle)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(centerX, bodyBottomY); ctx.lineTo(centerX + 15 * Math.sin(legAngle), bodyBottomY + 15 * Math.cos(legAngle)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX - 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX + 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke(); }
-        function drawCastle() { if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; const keepX = castle.leftTower.x + castle.leftTower.w; const keepY = castle.y - castle.mainKeep.h; const keepW = castle.rightTower.x - keepX; ctx.fillRect(keepX, keepY, keepW, castle.mainKeep.h); ctx.strokeRect(keepX, keepY, keepW, castle.mainKeep.h); ctx.fillRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h); ctx.strokeRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h); ctx.fillRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h); ctx.strokeRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h); ctx.fillStyle = '#6B4226'; ctx.fillRect(castle.gate.x, castle.gate.y, castle.gate.w, castle.gate.h); }
-        function drawPlatforms() { ctx.fillStyle = currentTheme.fill; ctx.strokeStyle = currentTheme.stroke; ctx.lineWidth = 2; for (const p of platforms) { ctx.fillRect(p.x, p.y, p.width, p.height); ctx.strokeRect(p.x, p.y, p.width, p.height); } }
-        function drawHUD() { ctx.fillStyle = 'white'; ctx.font = '20px "Press Start 2P"'; ctx.textAlign = 'left'; ctx.fillText(`Score:${score}`, 10, 30); ctx.textAlign = 'right'; ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH - 60, 30); }
-        function update() { if (gameIsOver) return; for (const cloud of clouds) { cloud.x -= cloud.speed; } clouds = clouds.filter(cloud => cloud.x + cloud.radius * 2 > 0); if (Math.random() < 0.007) { spawnCloud(); } stickman.x += stickman.vx; stickman.vy += stickman.GRAVITY; stickman.y += stickman.vy; let onPlatform = false; for (const platform of platforms) { if (stickman.vy >= 0 && (stickman.x + stickman.width) > platform.x && stickman.x < (platform.x + platform.width) && (stickman.y + stickman.height) >= platform.y && (stickman.y + stickman.height - stickman.vy) <= platform.y) { stickman.y = platform.y - stickman.height; stickman.vy = 0; stickman.isJumping = false; onPlatform = true; break; } } const cameraDeadzone = CANVAS_WIDTH / 3; if (stickman.x > cameraX + cameraDeadzone * 1.5) { cameraX = stickman.x - cameraDeadzone * 1.5; } platforms = platforms.filter(p => p.x + p.width > cameraX); if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) { generateNewPlatform(); } if (stickman.isJumping) { stickman.animationState = 'jumping'; } else if (stickman.vx !== 0) { stickman.animationState = 'walking'; stickman.animationFrame++; } else { stickman.animationState = 'idle'; stickman.animationFrame = 0; } score = Math.max(score, Math.floor(stickman.x / 10)); if (score >= winScore && !castle) { spawnCastle(); } if (stickman.y > CANVAS_HEIGHT + 100) { gameIsOver = true; showGameOverScreen(); } if (castle) { const gate = castle.gate; if (stickman.x < gate.x + gate.w && stickman.x + stickman.width > gate.x && stickman.y < gate.y + gate.h && stickman.y + stickman.height > gate.y) { gameIsOver = true; stickman.vx = 0; stickman.animationState = 'idle'; setTimeout(() => { startNextLevel(); }, 500); return; } } }
+        function spawnCloud(isInitial = false) {
+            const cloud = {
+                x: isInitial ? Math.random() * CANVAS_WIDTH : CANVAS_WIDTH + 100,
+                y: 50 + Math.random() * 200,
+                radius: 30 + Math.random() * 30,
+                speed: 0.2 + Math.random() * 0.6
+            };
+            clouds.push(cloud);
+        }
+
+        function startNextLevel() {
+            currentLevel++;
+            winScore = currentLevel * 1000;
+
+            const oldTheme = currentTheme;
+            do {
+                currentTheme = levelThemes[Math.floor(Math.random() * levelThemes.length)];
+            } while (currentTheme === oldTheme && levelThemes.length > 1);
+
+            stickman.x = castle.x + castle.width + 150;
+            stickman.y = 400;
+            stickman.vy = 0;
+            stickman.isJumping = false;
+
+            castle = null;
+            platforms = [];
+            gameIsOver = false;
+
+            const newStartPlatformWidth = 400;
+            platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 });
+            farthestPlatformX = stickman.x - 100 + newStartPlatformWidth;
+            cameraX = stickman.x - CANVAS_WIDTH / 4;
+
+            isMusicStarted = false;
+            startMusicIfNeeded();
+        }
+
+        function spawnCastle() {
+            const castleX = winScore * 10;
+            const castleBaseY = MAX_Y_LEVEL;
+            const castleWidth = 300 + Math.random() * 150;
+            const mainKeepHeight = 150 + Math.random() * 100;
+            const leftTowerHeight = mainKeepHeight + 50 + Math.random() * 100;
+            const rightTowerHeight = mainKeepHeight + 50 + Math.random() * 100;
+            const leftTowerWidth = castleWidth * (0.25 + Math.random() * 0.1);
+            const rightTowerWidth = castleWidth * (0.25 + Math.random() * 0.1);
+            const keepX = castleX + leftTowerWidth;
+            const keepWidth = castleWidth - leftTowerWidth - rightTowerWidth;
+            const gateWidth = keepWidth * 0.4;
+            const gateHeight = mainKeepHeight * 0.6;
+            castle = {
+                x: castleX, y: castleBaseY, width: castleWidth,
+                mainKeep: { h: mainKeepHeight },
+                leftTower: { x: castleX, y: castleBaseY - leftTowerHeight, w: leftTowerWidth, h: leftTowerHeight },
+                rightTower: { x: castleX + castleWidth - rightTowerWidth, y: castleBaseY - rightTowerHeight, w: rightTowerWidth, h: rightTowerHeight },
+                gate: { x: keepX + (keepWidth - gateWidth) / 2, y: castleBaseY - gateHeight, w: gateWidth, h: gateHeight }
+            };
+            platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2 });
+            farthestPlatformX = castle.x + castle.width;
+        }
+
+        function generateNewPlatform() {
+            const width = Math.floor(Math.random() * (MAX_PLATFORM_WIDTH - MIN_PLATFORM_WIDTH + 1)) + MIN_PLATFORM_WIDTH;
+            const gap = Math.floor(Math.random() * (MAX_GAP_X - MIN_GAP_X + 1)) + MIN_GAP_X;
+            const x = farthestPlatformX + gap;
+            const y = Math.floor(Math.random() * (MAX_Y_LEVEL - MIN_Y_LEVEL + 1)) + MIN_Y_LEVEL;
+            platforms.push({ x, y, width, height: PLATFORM_HEIGHT });
+            farthestPlatformX = x + width;
+        }
+
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            for (const cloud of clouds) {
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+                ctx.arc(cloud.x - cloud.radius * 0.6, cloud.y + 5, cloud.radius * 0.7, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.radius * 0.7, cloud.y + 3, cloud.radius * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawStickman() {
+            ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
+            const centerX = stickman.x + stickman.width / 2, headY = stickman.y,
+                  bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
+            ctx.beginPath(); ctx.arc(centerX, headY, 10, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, bodyTopY); ctx.lineTo(centerX, bodyBottomY); ctx.stroke();
+            let legAngle = 0.5, armAngle = 0.5;
+            if (stickman.isJumping) { legAngle = 0.8; armAngle = 1.2; }
+            else if (stickman.animationState === 'walking') {
+                const framePos = (stickman.animationFrame / stickman.animationSpeed) * Math.PI * 2;
+                legAngle = Math.sin(framePos) * 0.8; armAngle = Math.sin(framePos) * -0.8;
+            }
+            ctx.beginPath(); ctx.moveTo(centerX, bodyBottomY); ctx.lineTo(centerX - 15 * Math.sin(legAngle), bodyBottomY + 15 * Math.cos(legAngle)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, bodyBottomY); ctx.lineTo(centerX + 15 * Math.sin(legAngle), bodyBottomY + 15 * Math.cos(legAngle)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX - 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX + 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke();
+        }
+
+        function drawCastle() {
+            if (!castle) return;
+            ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
+            const keepX = castle.leftTower.x + castle.leftTower.w;
+            const keepY = castle.y - castle.mainKeep.h;
+            const keepW = castle.rightTower.x - keepX;
+            ctx.fillRect(keepX, keepY, keepW, castle.mainKeep.h); ctx.strokeRect(keepX, keepY, keepW, castle.mainKeep.h);
+            ctx.fillRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h); ctx.strokeRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h);
+            ctx.fillRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h); ctx.strokeRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h);
+            ctx.fillStyle = '#6B4226';
+            ctx.fillRect(castle.gate.x, castle.gate.y, castle.gate.w, castle.gate.h);
+        }
+
+        function drawPlatforms() {
+            ctx.fillStyle = currentTheme.fill; ctx.strokeStyle = currentTheme.stroke; ctx.lineWidth = 2;
+            for (const p of platforms) {
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.strokeRect(p.x, p.y, p.width, p.height);
+            }
+        }
+
+        function drawHUD() {
+            ctx.fillStyle = 'white';
+            ctx.font = '20px "Press Start 2P"';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score:${score}`, 10, 30);
+            ctx.textAlign = 'right';
+            ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH - 60, 30);
+        }
+
+        function update() {
+            if (gameIsOver) return;
+
+            for (const cloud of clouds) {
+                cloud.x -= cloud.speed;
+            }
+            clouds = clouds.filter(cloud => cloud.x + cloud.radius * 2 > 0);
+            if (Math.random() < 0.007) {
+                spawnCloud();
+            }
+
+            stickman.x += stickman.vx;
+            stickman.vy += stickman.GRAVITY;
+            stickman.y += stickman.vy;
+
+            let onPlatform = false;
+            for (const platform of platforms) {
+                if (stickman.vy >= 0 && (stickman.x + stickman.width) > platform.x && stickman.x < (platform.x + platform.width) && (stickman.y + stickman.height) >= platform.y && (stickman.y + stickman.height - stickman.vy) <= platform.y) {
+                    stickman.y = platform.y - stickman.height;
+                    stickman.vy = 0; stickman.isJumping = false;
+                    onPlatform = true;
+                    break;
+                }
+            }
+
+            const cameraDeadzone = CANVAS_WIDTH / 3;
+            if (stickman.x > cameraX + cameraDeadzone * 1.5) {
+                cameraX = stickman.x - cameraDeadzone * 1.5;
+            }
+
+            platforms = platforms.filter(p => p.x + p.width > cameraX);
+            if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) {
+                generateNewPlatform();
+            }
+
+            if (stickman.isJumping) { stickman.animationState = 'jumping'; }
+            else if (stickman.vx !== 0) { stickman.animationState = 'walking'; stickman.animationFrame++; }
+            else { stickman.animationState = 'idle'; stickman.animationFrame = 0; }
+            score = Math.max(score, Math.floor(stickman.x / 10));
+
+            if (score >= winScore && !castle) {
+                spawnCastle();
+            }
+
+            if (stickman.y > CANVAS_HEIGHT + 100) {
+                gameIsOver = true;
+                showGameOverScreen();
+            }
+
+            if (castle) {
+                const gate = castle.gate;
+                if (stickman.x < gate.x + gate.w &&
+                    stickman.x + stickman.width > gate.x &&
+                    stickman.y < gate.y + gate.h &&
+                    stickman.y + stickman.height > gate.y) {
+                    gameIsOver = true;
+                    stickman.vx = 0;
+                    stickman.animationState = 'idle';
+                    setTimeout(() => { startNextLevel(); }, 500);
+                    return;
+                }
+            }
+        }
+
         let lastTime = 0;
-        function gameLoop(timestamp) { const deltaTime = timestamp - lastTime; lastTime = timestamp; if(!gameIsOver) { handleInput(); update(); } ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); drawClouds(); ctx.save(); ctx.translate(-cameraX, 0); drawPlatforms(); if (castle) drawCastle(); drawStickman(); ctx.restore(); drawHUD(); requestAnimationFrame(gameLoop); }
+        function gameLoop(timestamp) {
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (!gameIsOver) {
+                handleInput();
+                update();
+            }
+
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            drawClouds();
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+            drawPlatforms();
+            if (castle) drawCastle();
+            drawStickman();
+            ctx.restore();
+            drawHUD();
+
+            requestAnimationFrame(gameLoop);
+        }
+
         const keys = {};
-        window.addEventListener('keydown', (e) => { if (gameIsOver) { if(e.key === 'Enter') saveScoreButton.click(); return; }; keys[e.key] = true; if (e.key === ' ' && !stickman.isJumping) { e.preventDefault(); stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; startMusicIfNeeded(); jumpSound.currentTime = 0; jumpSound.play().catch(e => console.error("Jump sound failed", e)); } });
-        window.addEventListener('keyup', (e) => { keys[e.key] = false; if (e.key === ' ') { if (stickman.vy < 0) { stickman.vy *= 0.5; } } });
-        function handleInput() { if (gameIsOver) { stickman.vx = 0; return; } if (keys['ArrowLeft'] || keys['a'] || keys['left']) { stickman.vx = -stickman.MOVE_SPEED; startMusicIfNeeded(); } else if (keys['ArrowRight'] || keys['d'] || keys['right']) { stickman.vx = stickman.MOVE_SPEED; startMusicIfNeeded(); } else { stickman.vx = 0; } }
+        window.addEventListener('keydown', (e) => {
+            if (gameIsOver) {
+                if (e.key === 'Enter') saveScoreButton.click();
+                return;
+            };
+            keys[e.key] = true;
+            if (e.key === ' ' && !stickman.isJumping) {
+                e.preventDefault();
+                stickman.vy = stickman.JUMP_POWER;
+                stickman.isJumping = true;
+                startMusicIfNeeded();
+
+                jumpSound.currentTime = 0;
+                jumpSound.play().catch(e => console.error("Jump sound failed", e));
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            if (e.key === ' ') {
+                if (stickman.vy < 0) {
+                    stickman.vy *= 0.5;
+                }
+            }
+        });
+
+        function handleInput() {
+            if (gameIsOver) { stickman.vx = 0; return; }
+            if (keys['ArrowLeft'] || keys['a'] || keys['left']) {
+                stickman.vx = -stickman.MOVE_SPEED;
+                startMusicIfNeeded();
+            }
+            else if (keys['ArrowRight'] || keys['d'] || keys['right']) {
+                stickman.vx = stickman.MOVE_SPEED;
+                startMusicIfNeeded();
+            }
+            else { stickman.vx = 0; }
+        }
+
         const leftButton = document.getElementById('leftButton');
         const jumpButton = document.getElementById('jumpButton');
         const rightButton = document.getElementById('rightButton');
-        function buttonPress(buttonId, isPressed) { switch (buttonId) { case 'leftButton': keys['left'] = isPressed; break; case 'rightButton': keys['right'] = isPressed; break; case 'jumpButton': if (isPressed && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; jumpSound.currentTime = 0; jumpSound.play().catch(e => console.error("Jump sound failed", e)); } break; } }
-        function handleTouch(event, buttonId, isPressed) { event.preventDefault(); buttonPress(buttonId, isPressed); startMusicIfNeeded(); }
-        ['touchstart', 'mousedown'].forEach(evt => { leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', true)); rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', true)); jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', true)); });
-        ['touchend', 'mouseup', 'touchcancel', 'mouseleave'].forEach(evt => { leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', false)); rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', false)); jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false)); });
-        
-        // Initialize and start the game
-        resetGame();
+
+        function buttonPress(buttonId, isPressed) {
+            switch (buttonId) {
+                case 'leftButton': keys['left'] = isPressed; break;
+                case 'rightButton': keys['right'] = isPressed; break;
+                case 'jumpButton':
+                    if (isPressed && !stickman.isJumping) {
+                        stickman.vy = stickman.JUMP_POWER;
+                        stickman.isJumping = true;
+
+                        jumpSound.currentTime = 0;
+                        jumpSound.play().catch(e => console.error("Jump sound failed", e));
+                    }
+                    break;
+            }
+        }
+        function handleTouch(event, buttonId, isPressed) {
+            event.preventDefault();
+            buttonPress(buttonId, isPressed);
+            startMusicIfNeeded();
+        }
+
+        ['touchstart', 'mousedown'].forEach(evt => {
+            leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', true));
+            rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', true));
+            jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', true));
+        });
+
+        ['touchend', 'mouseup', 'touchcancel', 'mouseleave'].forEach(evt => {
+            leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', false));
+            rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', false));
+            jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false));
+        });
+
+        resetGame(); // Call the resetGame() function at the start
         gameLoop(0);
     </script>
 </body>
