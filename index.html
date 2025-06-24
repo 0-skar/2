@@ -80,7 +80,6 @@
         const MAX_GAP_X = 180;
         const MIN_Y_LEVEL = 350;
         const MAX_Y_LEVEL = 550;
-        const HIGH_SCORES_KEY = 'stickMobHighScores';
         const levelThemes = [ { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' }, { fill: '#B71C1C', stroke: '#4E0000' }, { fill: '#1B5E20', stroke: '#003300' }, { fill: '#4A148C', stroke: '#1A0033' }, { fill: '#FF6F00', stroke: '#B35000' }, ];
         const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, animationState: 'idle', animationFrame: 0, animationSpeed: 5 };
         let platforms = [];
@@ -96,25 +95,37 @@
         let highScores = [];
         let isMusicStarted = false;
         let isMuted = false;
-        
-        // --- MODIFICATION START ---
-        // This is the URL where your server is running.
-        // It points to 'localhost' for local testing. When you deploy to a real server,
-        // you would change this to your server's public URL.
+
+        // --- MODIFICATION START: SERVER COMMUNICATION SETUP ---
+
+        // This is the URL where your Node.js server is running.
+        // For local testing, 'http://localhost:3000' is correct.
+        // When you deploy, you'll change this to your server's public address.
         const SERVER_URL = 'http://localhost:3000';
 
+        /**
+         * Fetches the latest high scores from the server.
+         */
         async function loadHighScores() {
             try {
                 const response = await fetch(`${SERVER_URL}/get-scores`);
-                if (!response.ok) { throw new Error('Network response was not ok'); }
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.statusText}`);
+                }
                 highScores = await response.json();
             } catch (error) {
-                console.error("Failed to load scores from server:", error);
-                // Fallback to a simple default list if the server can't be reached
-                highScores = [ { name: 'OFFLINE', score: 500 }, { name: 'MODE', score: 100 } ];
+                console.error("Could not fetch high scores:", error);
+                // If the server is offline, use a default fallback list.
+                highScores = [
+                    { name: 'OFFLINE', score: 500 },
+                    { name: 'MODE', score: 100 }
+                ];
             }
         }
         
+        /**
+         * Sends a new high score to the server to be saved.
+         */
         async function saveHighScore() {
             const playerName = (playerNameInput.value.trim() || 'AAA').toUpperCase();
             const newScore = { name: playerName, score: score };
@@ -122,29 +133,69 @@
             try {
                 await fetch(`${SERVER_URL}/submit-score`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', },
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify(newScore),
                 });
-                 console.log("Score sent to server.");
+                console.log("Score sent to server for saving.");
             } catch (error) {
-                console.error("Failed to save score to server:", error);
+                console.error("Failed to send score to server:", error);
+                // We don't need to do anything else here; the game will just restart.
             }
         }
-        
-        saveScoreButton.addEventListener('click', async () => {
-            const isNewHighScore = highScores.length < 10 || score > highScores[highScores.length - 1].score;
-            if (isNewHighScore) {
-                await saveHighScore();
+
+        /**
+         * When the game ends, shows the game over screen and the fetched leaderboard.
+         */
+        function showGameOverScreen() {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            gameOverSound.play().catch(e => console.error("Audio play failed:", e));
+
+            finalScoreEl.innerText = score;
+
+            // Check if the current score is high enough to make the leaderboard
+            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+            if (score > lowestHighScore) {
+                newHighScoreDiv.style.display = 'block';
+                saveScoreButton.innerText = 'SAVE & RESTART';
+                playerNameInput.value = '';
+                setTimeout(() => playerNameInput.focus(), 100);
+            } else {
+                newHighScoreDiv.style.display = 'none';
+                saveScoreButton.innerText = 'PLAY AGAIN';
             }
-            await resetGame();
+
+            // Populate the leaderboard list on the game over screen
+            highScoreList.innerHTML = highScores
+                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
+                .join('');
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        /**
+         * Handles the click on the main button on the game over screen.
+         * It saves the score if necessary, then resets the game.
+         */
+        saveScoreButton.addEventListener('click', async () => {
+             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+             if (score > lowestHighScore) {
+                 await saveHighScore(); // Wait for the score to be sent
+             }
+             await resetGame(); // Wait for the game to reset (which includes fetching new scores)
         });
 
+        /**
+         * Resets the entire game state for a new round.
+         */
         async function resetGame() {
             gameOverSound.pause();
             gameOverSound.currentTime = 0;
             isMusicStarted = false;
-            
-            await loadHighScores(); // Wait for scores to load before continuing
+
+            await loadHighScores(); // IMPORTANT: Wait for scores to load before continuing
             
             gameOverScreen.style.display = 'none';
             currentLevel = 1;
@@ -163,28 +214,12 @@
             for (let i = 0; i < 7; i++) { spawnCloud(true); }
             while (farthestPlatformX < CANVAS_WIDTH * 1.5) { generateNewPlatform(); }
         }
-        // --- MODIFICATION END ---
-        
+
+        // --- END OF MODIFICATIONS ---
+
+
         function startMusicIfNeeded() { if (!isMusicStarted && !isMuted) { bgMusic.play().catch(e => console.error("Audio play failed:", e)); isMusicStarted = true; } }
         muteButton.addEventListener('click', () => { isMuted = !isMuted; bgMusic.muted = isMuted; gameOverSound.muted = isMuted; jumpSound.muted = isMuted; muteButton.innerText = isMuted ? '🔇' : '🔊'; });
-
-        function showGameOverScreen() {
-            bgMusic.pause(); bgMusic.currentTime = 0; gameOverSound.play().catch(e => console.error("Audio play failed:", e));
-            finalScoreEl.innerText = score;
-            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
-            if (score > lowestHighScore) {
-                newHighScoreDiv.style.display = 'block';
-                saveScoreButton.innerText = 'SAVE & RESTART';
-                playerNameInput.value = '';
-                setTimeout(() => playerNameInput.focus(), 100);
-            } else {
-                newHighScoreDiv.style.display = 'none';
-                saveScoreButton.innerText = 'PLAY AGAIN';
-            }
-            highScoreList.innerHTML = highScores.map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`).join('');
-            gameOverScreen.style.display = 'flex';
-        }
-
         function spawnCloud(isInitial = false) { const cloud = { x: isInitial ? Math.random() * CANVAS_WIDTH : CANVAS_WIDTH + 100, y: 50 + Math.random() * 200, radius: 30 + Math.random() * 30, speed: 0.2 + Math.random() * 0.6 }; clouds.push(cloud); }
         function startNextLevel() { currentLevel++; winScore = currentLevel * 1000; const oldTheme = currentTheme; do { currentTheme = levelThemes[Math.floor(Math.random() * levelThemes.length)]; } while (currentTheme === oldTheme && levelThemes.length > 1); stickman.x = castle.x + castle.width + 150; stickman.y = 400; stickman.vy = 0; stickman.isJumping = false; castle = null; platforms = []; gameIsOver = false; const newStartPlatformWidth = 400; platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 }); farthestPlatformX = stickman.x - 100 + newStartPlatformWidth; cameraX = stickman.x - CANVAS_WIDTH / 4; isMusicStarted = false; startMusicIfNeeded(); }
         function spawnCastle() { const castleX = winScore * 10; const castleBaseY = MAX_Y_LEVEL; const castleWidth = 300 + Math.random() * 150; const mainKeepHeight = 150 + Math.random() * 100; const leftTowerHeight = mainKeepHeight + 50 + Math.random() * 100; const rightTowerHeight = mainKeepHeight + 50 + Math.random() * 100; const leftTowerWidth = castleWidth * (0.25 + Math.random() * 0.1); const rightTowerWidth = castleWidth * (0.25 + Math.random() * 0.1); const keepX = castleX + leftTowerWidth; const keepWidth = castleWidth - leftTowerWidth - rightTowerWidth; const gateWidth = keepWidth * 0.4; const gateHeight = mainKeepHeight * 0.6; castle = { x: castleX, y: castleBaseY, width: castleWidth, mainKeep: { h: mainKeepHeight }, leftTower: { x: castleX, y: castleBaseY - leftTowerHeight, w: leftTowerWidth, h: leftTowerHeight }, rightTower: { x: castleX + castleWidth - rightTowerWidth, y: castleBaseY - rightTowerHeight, w: rightTowerWidth, h: rightTowerHeight }, gate: { x: keepX + (keepWidth - gateWidth) / 2, y: castleBaseY - gateHeight, w: gateWidth, h: gateHeight } }; platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2 }); farthestPlatformX = castle.x + castle.width; }
@@ -209,8 +244,9 @@
         ['touchstart', 'mousedown'].forEach(evt => { leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', true)); rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', true)); jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', true)); });
         ['touchend', 'mouseup', 'touchcancel', 'mouseleave'].forEach(evt => { leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', false)); rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', false)); jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false)); });
         
-        resetGame(); // Initialize the game
-        gameLoop(0); // Start the game loop
+        // Initialize and start the game
+        resetGame();
+        gameLoop(0);
     </script>
 </body>
 </html>
