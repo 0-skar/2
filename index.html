@@ -203,8 +203,7 @@
 
 
     <script>
-        // Modified to use server-side scores
-        const API_ENDPOINT = 'http://localhost:3000'; // IMPORTANT: Match your server address and port
+        // NO CHANGES TO THE JAVASCRIPT ARE NEEDED.
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -230,6 +229,8 @@
         const MAX_GAP_X = 180;
         const MIN_Y_LEVEL = 350;
         const MAX_Y_LEVEL = 550;
+
+        const HIGH_SCORES_KEY = 'stickMobHighScores';
 
         const levelThemes = [
             { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' },
@@ -259,6 +260,13 @@
         let isMusicStarted = false;
         let isMuted = false;
 
+        // ----- NEW VARIABLES FOR GITHUB INTEGRATION -----
+        const GITHUB_USERNAME = 'YOUR_GITHUB_USERNAME'; // Replace with your GitHub username
+        const GITHUB_REPO = 'YOUR_GITHUB_REPO'; // Replace with your repository name
+        const GITHUB_TOKEN = 'YOUR_GITHUB_TOKEN'; // Replace with your Personal Access Token
+        const SCORES_FILE_PATH = 'scores.json'; // Path to your scores.json file in the repo
+        let scoresFileSha = null;  // SHA of the scores file, needed for updates
+
         function startMusicIfNeeded() {
             if (!isMusicStarted && !isMuted) {
                 bgMusic.play().catch(e => console.error("Audio play failed:", e));
@@ -274,32 +282,110 @@
             muteButton.innerText = isMuted ? '🔇' : '🔊';
         });
 
-        function loadHighScores() {
-            //No implementation because we are getting the data from the server
+        // ----- NEW FUNCTIONS FOR GITHUB API -----
+
+        async function getScoresFileSha() {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${SCORES_FILE_PATH}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to get scores file SHA: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.sha;
+            } catch (error) {
+                console.error("Error getting scores file SHA:", error);
+                return null;
+            }
         }
 
-        function saveHighScore() {
+        async function loadHighScores() {
+            const apiUrl = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/main/${SCORES_FILE_PATH}`; // Or the correct branch name
+
+            try {
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load high scores: ${response.status} ${response.statusText}`);
+                }
+
+                highScores = await response.json();
+                highScores.sort((a, b) => b.score - a.score);
+                highScores = highScores.slice(0, 10);
+
+            } catch (error) {
+                console.error("Error loading high scores:", error);
+                highScores = [];  // Initialize to an empty array to avoid errors
+            }
+
+            updateHighScoreListDisplay();
+        }
+
+        async function saveHighScore() {
             const playerName = (playerNameInput.value.trim() || 'AAA').toUpperCase();
             const newScore = { name: playerName, score: score };
 
-            fetch(`${API_ENDPOINT}/submit-score`, {  // Use the API endpoint
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newScore)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+            highScores.push(newScore);
+            highScores.sort((a, b) => b.score - a.score);
+            highScores = highScores.slice(0, 10);
+
+            await updateScoresFileOnGitHub(highScores);
+        }
+
+        async function updateScoresFileOnGitHub(scores) {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${SCORES_FILE_PATH}`;
+            const content = JSON.stringify(scores, null, 2); // Pretty print JSON
+            const contentBase64 = btoa(unescape(encodeURIComponent(content))); // Encode to Base64
+
+            try {
+                if (!scoresFileSha) {
+                    scoresFileSha = await getScoresFileSha();  // Make sure we have the SHA
+                    if (!scoresFileSha) {
+                        console.error("Could not get scores file SHA.  Saving score failed.");
+                        return;
+                    }
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Score saved:', data);
-                loadHighScoresFromServer();  // Reload scores from server after saving
-            })
-            .catch(error => console.error('Error saving score:', error));
+
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Update high scores',
+                        content: contentBase64,
+                        sha: scoresFileSha,
+                        branch: 'main' // Or your branch name
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to update scores file: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                scoresFileSha = data.content.sha;  // Update the SHA after successful update
+                console.log("Scores file updated successfully!");
+
+            } catch (error) {
+                console.error("Error updating scores file:", error);
+            }
+        }
+
+        function updateHighScoreListDisplay() {
+            highScoreList.innerHTML = highScores
+                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
+                .join('');
         }
 
         function showGameOverScreen() {
@@ -308,9 +394,9 @@
             gameOverSound.play().catch(e => console.error("Audio play failed:", e));
 
             finalScoreEl.innerText = score;
-            const lowestHighScore = highScores.length < 10 && highScores.length > 0 ? highScores[highScores.length - 1].score : 0;
+            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
 
-            if (score > lowestHighScore || highScores.length < 10) {
+            if (score > lowestHighScore) {
                 newHighScoreDiv.style.display = 'block';
                 saveScoreButton.innerText = 'SAVE & RESTART';
                 playerNameInput.value = '';
@@ -320,17 +406,17 @@
                 saveScoreButton.innerText = 'PLAY AGAIN';
             }
 
-            displayHighScores(); // Display the high scores after getting the information from server
+            updateHighScoreListDisplay();  // Use the function that already updates the list
+
             gameOverScreen.style.display = 'flex';
         }
 
-        saveScoreButton.addEventListener('click', () => {
-            const lowestHighScore = highScores.length < 10 && highScores.length > 0 ? highScores[highScores.length - 1].score : 0;
-            if (score > lowestHighScore || highScores.length < 10) {
-                saveHighScore();
-            } else {
-              resetGame();
+        saveScoreButton.addEventListener('click', async () => { // Make this async
+            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+            if (score > lowestHighScore) {
+                await saveHighScore(); // Await the save
             }
+            resetGame();
         });
 
         function resetGame() {
@@ -338,7 +424,6 @@
             gameOverSound.currentTime = 0;
             isMusicStarted = false;
 
-            loadHighScoresFromServer();
             gameOverScreen.style.display = 'none';
             currentLevel = 1;
             winScore = 1000;
@@ -365,27 +450,7 @@
             while (farthestPlatformX < CANVAS_WIDTH * 1.5) {
                 generateNewPlatform();
             }
-        }
-
-        function loadHighScoresFromServer() {
-            fetch(`${API_ENDPOINT}/get-scores`) // Use the API endpoint
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    highScores = data;
-                    displayHighScores();
-                })
-                .catch(error => console.error('Error loading high scores:', error));
-        }
-
-        function displayHighScores() {
-            highScoreList.innerHTML = highScores
-                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
-                .join('');
+            loadHighScores(); // Load scores after resetting the game
         }
 
         function spawnCloud(isInitial = false) {
@@ -472,7 +537,7 @@
         function drawStickman() {
             ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
             const centerX = stickman.x + stickman.width / 2, headY = stickman.y,
-                  bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
+                bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
             ctx.beginPath(); ctx.arc(centerX, headY, 10, 0, Math.PI * 2); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(centerX, bodyTopY); ctx.lineTo(centerX, bodyBottomY); ctx.stroke();
             let legAngle = 0.5, armAngle = 0.5;
@@ -680,7 +745,7 @@
             jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false));
         });
 
-        resetGame(); // Call the resetGame() function at the start
+        resetGame();
         gameLoop(0);
     </script>
 </body>
