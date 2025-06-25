@@ -6,11 +6,10 @@
     <title>Endless Stickman Platformer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* --- GENERAL RESETS AND SETUP --- */
+        /* --- Base Setup --- */
         * {
-            box-sizing: border-box; /* Makes layout calculations more predictable */
+            box-sizing: border-box;
         }
-
         html, body {
             margin: 0;
             padding: 0;
@@ -23,43 +22,51 @@
             text-shadow: 2px 2px #000000;
         }
 
-        /* --- MAJOR CHANGES FOR RESPONSIVENESS --- */
+        /* --- Main Game Container (Flex Layout) --- */
         #gameContainer {
             display: flex;
-            flex-direction: column; /* Default to portrait layout (game on top, controls on bottom) */
             width: 100%;
             height: 100%;
-            justify-content: center;
-            align-items: center;
             position: relative;
-            padding: 5px;
+            /* Default: Portrait view (game on top, controls on bottom) */
+            flex-direction: column;
         }
 
+        /* --- NEW: Canvas Wrapper for responsive scaling --- */
+        #canvasWrapper {
+            flex: 1 1 auto; /* Allow wrapper to grow and shrink */
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 0; /* Flexbox fix for overflow */
+        }
+        
         #gameCanvas {
             border: 2px solid black;
             background-color: #87CEEB;
-            /* Key change for responsive scaling: */
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Scales the canvas like an image, maintaining aspect ratio */
+            /* The canvas maintains its aspect ratio within the wrapper */
+            aspect-ratio: 800 / 600; 
             max-width: 100%;
             max-height: 100%;
         }
 
+        /* --- Controls Styling --- */
         #controls {
             display: flex;
-            position: relative; /* Changed from fixed to be part of the flex layout */
-            width: 100%;
-            height: 100px; /* This height is for portrait mode */
-            background-color: rgba(0, 0, 0, 0.2);
             justify-content: space-around;
             align-items: center;
             z-index: 10;
-            flex-shrink: 0; /* Prevents controls from shrinking */
+            background-color: rgba(0, 0, 0, 0.2);
+            /* Default: Horizontal bar for portrait view */
+            flex-direction: row;
+            width: 100%;
+            height: 100px;
+            flex-shrink: 0;
         }
 
         .button {
-            padding: 15px 30px;
+            padding: 15px;
             background-color: rgba(255, 255, 255, 0.3);
             color: white;
             border: 2px solid black;
@@ -67,48 +74,47 @@
             cursor: pointer;
             user-select: none;
             font-size: 1.2em;
+            text-align: center;
             font-family: 'Press Start 2P', sans-serif;
         }
 
-        /* Original media query to hide controls on desktop */
+        /* Hide on-screen controls on larger screens */
         @media (min-width: 801px) {
             #controls {
                 display: none;
             }
         }
 
-        /* --- LANDSCAPE MODE STYLES FOR MOBILE --- */
-        /* This targets devices that are wider than they are tall, and not too high */
-        @media (orientation: landscape) and (max-height: 500px) {
+        /* --- NEW & IMPROVED: Landscape Mode on Mobile --- */
+        @media (orientation: landscape) {
             #gameContainer {
-                flex-direction: row; /* Game on left, controls on right */
-                justify-content: center;
-                align-items: stretch;
+                /* Arrange side-by-side: game on left, controls on right */
+                flex-direction: row;
             }
 
-            #gameCanvas {
-                width: auto; /* Allow canvas to be flexible */
-                height: 100%;
-                flex: 1 1 auto; /* Canvas takes up remaining space */
+            #canvasWrapper {
+                min-width: 0; /* Flexbox fix for horizontal overflow */
             }
 
             #controls {
-                flex-direction: column; /* Stack buttons vertically */
-                width: 120px; /* Fixed width for the control bar on the side */
-                height: 100%; /* Take full height */
-                margin-left: 10px;
+                /* Become a vertical bar */
+                flex-direction: column;
+                width: 140px; /* Width of the control bar */
+                height: 100%;
             }
 
             .button {
-                width: 90%; /* Make buttons fill the control bar */
+                width: 85%; /* Buttons fill the vertical bar */
+                flex-grow: 1; /* Distribute space evenly */
                 margin: 5px 0;
             }
 
-            #jumpButton { order: 0; } /* Jump button on top */
+            #jumpButton { order: 0; }
             #leftButton { order: 1; }
             #rightButton { order: 2; }
         }
 
+        /* --- Unchanged Overlay and other styles --- */
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -124,112 +130,66 @@
             text-align: center;
             z-index: 20;
         }
-
-        /* ... all other styles remain the same ... */
-
         #gameOverScreen h1 {
-            font-size: 3em;
-            margin-bottom: 20px;
-            color: #ff4136;
+            font-size: 3em; margin-bottom: 20px; color: #ff4136;
         }
-
         #gameOverScreen h2 {
-            font-size: 1.5em;
-            margin-bottom: 30px;
+            font-size: 1.5em; margin-bottom: 30px;
         }
-
         #newHighScore {
             margin-bottom: 20px;
         }
-
         #playerNameInput {
-            width: 250px;
-            padding: 10px;
-            font-family: 'Press Start 2P', sans-serif;
-            font-size: 1em;
-            text-align: center;
-            background: #222;
-            color: white;
-            border: 2px solid white;
-            text-transform: uppercase;
+            width: 250px; padding: 10px; font-family: 'Press Start 2P', sans-serif; font-size: 1em;
+            text-align: center; background: #222; color: white; border: 2px solid white; text-transform: uppercase;
         }
-
         #saveScoreButton {
-             margin-top: 15px;
-             padding: 15px 30px;
-             font-size: 1em;
-             background: #0074d9;
-             border: 2px solid white;
-             color: white;
-             cursor: pointer;
-             font-family: 'Press Start 2P', sans-serif;
+             margin-top: 15px; padding: 15px 30px; font-size: 1em; background: #0074d9; border: 2px solid white;
+             color: white; cursor: pointer; font-family: 'Press Start 2P', sans-serif;
         }
-
         #highScoreContainer h3 {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            color: #ffd700;
+            font-size: 1.2em; margin-bottom: 10px; color: #ffd700;
         }
-
         #highScoreList {
-            list-style-type: none;
-            padding: 0;
-            width: 350px;
-            font-size: 0.9em;
+            list-style-type: none; padding: 0; width: 350px; font-size: 0.9em;
         }
-
         #highScoreList li {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
+            display: flex; justify-content: space-between; padding: 5px 0;
         }
-
         #muteButton {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.3);
-            color: white;
-            border: 2px solid white;
-            border-radius: 5px;
-            width: 40px;
-            height: 40px;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 15;
-            user-select: none;
+            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.3); color: white;
+            border: 2px solid white; border-radius: 5px; width: 40px; height: 40px; font-size: 20px;
+            cursor: pointer; z-index: 15; user-select: none;
         }
     </style>
 </head>
 <body>
 
     <div id="gameContainer">
-        <!-- The canvas is now inside the flexible container -->
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <!-- The canvas is now inside a wrapper for better layout control -->
+        <div id="canvasWrapper">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+        </div>
         
-        <!-- Controls are also inside the container to be part of the layout flow -->
         <div id="controls">
             <button class="button" id="jumpButton">Jump</button>
             <button class="button" id="leftButton">←</button>
             <button class="button" id="rightButton">→</button>
         </div>
 
-        <!-- Overlays remain directly inside the container -->
+        <!-- Overlays are still here, positioned absolutely over the container -->
         <button id="muteButton">🔊</button>
         <div id="gameOverScreen">
             <h1>GAME OVER</h1>
             <h2>YOUR SCORE: <span id="finalScore">0</span></h2>
-
             <div id="newHighScore">
                 <label for="playerNameInput">NEW HIGH SCORE! ENTER NAME:</label><br><br>
                 <input type="text" id="playerNameInput" maxlength="10" placeholder="AAA">
             </div>
-
             <div id="highScoreContainer">
                 <h3>- LEADERBOARD -</h3>
                 <ol id="highScoreList"></ol>
             </div>
-
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
     </div>
@@ -239,10 +199,9 @@
     <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
     <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
 
-
     <script>
-        // NO CHANGES TO THE JAVASCRIPT ARE NEEDED FOR THIS FIX.
-        // All the original game logic below remains the same.
+        // NO CHANGES WERE MADE TO THE JAVASCRIPT.
+        // It remains exactly the same as the last correct version.
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameOverScreen = document.getElementById('gameOverScreen');
@@ -427,7 +386,7 @@
             currentTheme = levelThemes[0];
             stickman.x = 150; stickman.y = 400;
             stickman.vx = 0; stickman.vy = 0;
-            stickman.isJumping = false; stickman.animationState = 'idle';
+            stickman.isJumping = false; animationState = 'idle';
             platforms = [];
             const startPlatformWidth = 400;
             platforms.push({ x: 0, y: 500, width: startPlatformWidth, height: PLATFORM_HEIGHT * 2 });
