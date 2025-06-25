@@ -163,7 +163,6 @@
             user-select: none;
         }
 
-        /* --- NEW: Style for Back Button --- */
         #backButton {
             position: absolute;
             top: 15px;
@@ -171,7 +170,7 @@
             padding: 10px 15px;
             background: rgba(0,0,0,0.3);
             color: white;
-            text-decoration: none; /* Remove underline from link */
+            text-decoration: none;
             border: 2px solid white;
             border-radius: 5px;
             font-size: 1em;
@@ -181,7 +180,6 @@
             user-select: none;
         }
 
-        /* --- NEW: Style for Close Button on Leaderboard --- */
         #closeLeaderboardButton {
             position: absolute;
             top: 15px;
@@ -191,13 +189,13 @@
             color: white;
             width: 40px;
             height: 40px;
-            border-radius: 50%; /* Make it circular */
+            border-radius: 50%;
             font-size: 28px;
-            line-height: 36px; /* Helps center the 'X' */
+            line-height: 36px;
             text-align: center;
             cursor: pointer;
-            z-index: 21; /* Keep it above other game over elements */
-            font-family: Arial, sans-serif; /* Use a standard font for the 'X' */
+            z-index: 21;
+            font-family: Arial, sans-serif;
             padding: 0;
         }
         #closeLeaderboardButton:hover {
@@ -208,15 +206,12 @@
 </head>
 <body>
     
-    <!-- --- NEW: Back Button --- -->
-    <!-- Make sure "index.html" is the correct name of your main page -->
-    <a href="0-skar.github.io/0/" id="backButton">« BACK</a>
+    <a href="https://0-skar.github.io/0/" id="backButton">« BACK</a>
 
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <button id="muteButton">🔊</button>
         <div id="gameOverScreen">
-            <!-- --- NEW: Close Button --- -->
             <button id="closeLeaderboardButton">×</button>
 
             <h1>GAME OVER</h1>
@@ -243,7 +238,6 @@
         <button class="button" id="rightButton">→</button>
     </div>
 
-    <!-- --- AUDIO ELEMENTS (Unchanged) --- -->
     <audio id="bgMusic" loop src="https://raw.githubusercontent.com/0-skar/2/81989a14c120532cb7cc0a26c9c1378dcaca230d/pitupitu.mp3"></audio>
     <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
     <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
@@ -264,7 +258,6 @@
         const gameOverSound = document.getElementById('gameOverSound');
         const jumpSound = document.getElementById('jumpSound');
 
-        // --- NEW: Get close button element ---
         const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
 
         const CANVAS_WIDTH = canvas.width;
@@ -323,11 +316,9 @@
             muteButton.innerText = isMuted ? '🔇' : '🔊';
         });
 
-        // --- NEW: Event listener for close button ---
         closeLeaderboardButton.addEventListener('click', () => {
-            resetGame(); // Just restart the game
+            resetGame();
         });
-
 
         function loadHighScores() {
             const scoresJSON = localStorage.getItem(HIGH_SCORES_KEY);
@@ -353,7 +344,7 @@
             finalScoreEl.innerText = score;
             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
 
-            if (score > 0 && score > lowestHighScore) { // Added score > 0 check
+            if (score > 0 && score > lowestHighScore) {
                 newHighScoreDiv.style.display = 'block';
                 saveScoreButton.innerText = 'SAVE & RESTART';
                 playerNameInput.value = '';
@@ -372,12 +363,11 @@
 
         saveScoreButton.addEventListener('click', () => {
              const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
-             if (score > 0 && score > lowestHighScore) { // Added score > 0 check
+             if (score > 0 && score > lowestHighScore) {
                  saveHighScore();
              }
              resetGame();
         });
-
 
         function resetGame() {
             gameOverSound.pause();
