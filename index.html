@@ -6,67 +6,40 @@
     <title>Endless Stickman Platformer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* --- Base Setup --- */
-        * {
-            box-sizing: border-box;
-        }
-        html, body {
+        body {
             margin: 0;
-            padding: 0;
             overflow: hidden;
             background-color: #34495e;
-            width: 100vw;
-            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
             font-family: 'Press Start 2P', sans-serif;
             color: white;
             text-shadow: 2px 2px #000000;
         }
 
-        /* --- Main Game Container (Flex Layout) --- */
-        #gameContainer {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            position: relative;
-            /* Default: Portrait view (game on top, controls on bottom) */
-            flex-direction: column;
-        }
-
-        /* --- NEW: Canvas Wrapper for responsive scaling --- */
-        #canvasWrapper {
-            flex: 1 1 auto; /* Allow wrapper to grow and shrink */
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 0; /* Flexbox fix for overflow */
-        }
-        
-        #gameCanvas {
+        canvas {
             border: 2px solid black;
             background-color: #87CEEB;
-            /* The canvas maintains its aspect ratio within the wrapper */
-            aspect-ratio: 800 / 600; 
-            max-width: 100%;
-            max-height: 100%;
         }
 
-        /* --- Controls Styling --- */
         #controls {
             display: flex;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background-color: rgba(0, 0, 0, 0.2);
             justify-content: space-around;
             align-items: center;
             z-index: 10;
-            background-color: rgba(0, 0, 0, 0.2);
-            /* Default: Horizontal bar for portrait view */
-            flex-direction: row;
-            width: 100%;
-            height: 100px;
-            flex-shrink: 0;
         }
 
         .button {
-            padding: 15px;
+            padding: 15px 30px;
             background-color: rgba(255, 255, 255, 0.3);
             color: white;
             border: 2px solid black;
@@ -74,47 +47,33 @@
             cursor: pointer;
             user-select: none;
             font-size: 1.2em;
-            text-align: center;
             font-family: 'Press Start 2P', sans-serif;
         }
 
-        /* Hide on-screen controls on larger screens */
         @media (min-width: 801px) {
             #controls {
                 display: none;
             }
         }
 
-        /* --- NEW & IMPROVED: Landscape Mode on Mobile --- */
-        @media (orientation: landscape) {
-            #gameContainer {
-                /* Arrange side-by-side: game on left, controls on right */
-                flex-direction: row;
-            }
+        #leftButton { order: 1; }
+        #jumpButton { order: 0; }
+        #rightButton { order: 2; }
 
-            #canvasWrapper {
-                min-width: 0; /* Flexbox fix for horizontal overflow */
-            }
-
-            #controls {
-                /* Become a vertical bar */
-                flex-direction: column;
-                width: 140px; /* Width of the control bar */
-                height: 100%;
-            }
-
-            .button {
-                width: 85%; /* Buttons fill the vertical bar */
-                flex-grow: 1; /* Distribute space evenly */
-                margin: 5px 0;
-            }
-
-            #jumpButton { order: 0; }
-            #leftButton { order: 1; }
-            #rightButton { order: 2; }
+        #gameContainer {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
-        /* --- Unchanged Overlay and other styles --- */
+        #gameCanvas {
+            max-width: 100%;
+            max-height: 80%;
+        }
+        
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -130,78 +89,161 @@
             text-align: center;
             z-index: 20;
         }
+        
         #gameOverScreen h1 {
-            font-size: 3em; margin-bottom: 20px; color: #ff4136;
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ff4136;
         }
+        
         #gameOverScreen h2 {
-            font-size: 1.5em; margin-bottom: 30px;
+            font-size: 1.5em;
+            margin-bottom: 30px;
         }
+
         #newHighScore {
             margin-bottom: 20px;
         }
+
         #playerNameInput {
-            width: 250px; padding: 10px; font-family: 'Press Start 2P', sans-serif; font-size: 1em;
-            text-align: center; background: #222; color: white; border: 2px solid white; text-transform: uppercase;
+            width: 250px;
+            padding: 10px;
+            font-family: 'Press Start 2P', sans-serif;
+            font-size: 1em;
+            text-align: center;
+            background: #222;
+            color: white;
+            border: 2px solid white;
+            text-transform: uppercase;
         }
+
         #saveScoreButton {
-             margin-top: 15px; padding: 15px 30px; font-size: 1em; background: #0074d9; border: 2px solid white;
-             color: white; cursor: pointer; font-family: 'Press Start 2P', sans-serif;
+             margin-top: 15px;
+             padding: 15px 30px;
+             font-size: 1em;
+             background: #0074d9;
+             border: 2px solid white;
+             color: white;
+             cursor: pointer;
+             font-family: 'Press Start 2P', sans-serif;
         }
+        
         #highScoreContainer h3 {
-            font-size: 1.2em; margin-bottom: 10px; color: #ffd700;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #ffd700;
         }
+        
         #highScoreList {
-            list-style-type: none; padding: 0; width: 350px; font-size: 0.9em;
+            list-style-type: none;
+            padding: 0;
+            width: 350px;
+            font-size: 0.9em;
         }
+        
         #highScoreList li {
-            display: flex; justify-content: space-between; padding: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
         }
+        
         #muteButton {
-            position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.3); color: white;
-            border: 2px solid white; border-radius: 5px; width: 40px; height: 40px; font-size: 20px;
-            cursor: pointer; z-index: 15; user-select: none;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 15;
+            user-select: none;
         }
+
+        #backButton {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            text-decoration: none;
+            border: 2px solid white;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: 'Press Start 2P', sans-serif;
+            cursor: pointer;
+            z-index: 15;
+            user-select: none;
+        }
+
+        #closeLeaderboardButton {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 28px;
+            line-height: 36px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 21;
+            font-family: Arial, sans-serif;
+            padding: 0;
+        }
+        #closeLeaderboardButton:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
     </style>
 </head>
 <body>
+    
+    <a href="https://0-skar.github.io/0/" id="backButton">« BACK</a>
 
     <div id="gameContainer">
-        <!-- The canvas is now inside a wrapper for better layout control -->
-        <div id="canvasWrapper">
-            <canvas id="gameCanvas" width="800" height="600"></canvas>
-        </div>
-        
-        <div id="controls">
-            <button class="button" id="jumpButton">Jump</button>
-            <button class="button" id="leftButton">←</button>
-            <button class="button" id="rightButton">→</button>
-        </div>
-
-        <!-- Overlays are still here, positioned absolutely over the container -->
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
         <button id="muteButton">🔊</button>
         <div id="gameOverScreen">
+            <button id="closeLeaderboardButton">×</button>
+
             <h1>GAME OVER</h1>
             <h2>YOUR SCORE: <span id="finalScore">0</span></h2>
+
             <div id="newHighScore">
                 <label for="playerNameInput">NEW HIGH SCORE! ENTER NAME:</label><br><br>
                 <input type="text" id="playerNameInput" maxlength="10" placeholder="AAA">
             </div>
+
             <div id="highScoreContainer">
                 <h3>- LEADERBOARD -</h3>
                 <ol id="highScoreList"></ol>
             </div>
+
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
     </div>
 
-    <!-- --- AUDIO ELEMENTS (Unchanged) --- -->
+
+    <div id="controls">
+        <button class="button" id="jumpButton">Jump</button>
+        <button class="button" id="leftButton">←</button>
+        <button class="button" id="rightButton">→</button>
+    </div>
+
     <audio id="bgMusic" loop src="https://raw.githubusercontent.com/0-skar/2/81989a14c120532cb7cc0a26c9c1378dcaca230d/pitupitu.mp3"></audio>
     <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
     <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
 
+
     <script>
-        // NO CHANGES WERE MADE TO THE JAVASCRIPT.
-        // It remains exactly the same as the last correct version.
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const gameOverScreen = document.getElementById('gameOverScreen');
@@ -210,12 +252,17 @@
         const saveScoreButton = document.getElementById('saveScoreButton');
         const highScoreList = document.getElementById('highScoreList');
         const newHighScoreDiv = document.getElementById('newHighScore');
+        
         const muteButton = document.getElementById('muteButton');
         const bgMusic = document.getElementById('bgMusic');
         const gameOverSound = document.getElementById('gameOverSound');
         const jumpSound = document.getElementById('jumpSound');
+
+        const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
+
         const CANVAS_WIDTH = canvas.width;
         const CANVAS_HEIGHT = canvas.height;
+
         const PLATFORM_HEIGHT = 20;
         const MIN_PLATFORM_WIDTH = 100;
         const MAX_PLATFORM_WIDTH = 250;
@@ -223,17 +270,35 @@
         const MAX_GAP_X = 180;
         const MIN_Y_LEVEL = 350;
         const MAX_Y_LEVEL = 550;
+
+        const HIGH_SCORES_KEY = 'stickMobHighScores';
+
         const levelThemes = [
             { fill: '#6B4226', stroke: '#2c3e50' }, { fill: '#78909C', stroke: '#37474F' },
             { fill: '#B71C1C', stroke: '#4E0000' }, { fill: '#1B5E20', stroke: '#003300' },
             { fill: '#4A148C', stroke: '#1A0033' }, { fill: '#FF6F00', stroke: '#B35000' },
         ];
+
         const stickman = {
             x: 150, y: 400, width: 25, height: 50,
             vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5,
             MOVE_SPEED: 5, isJumping: false, animationState: 'idle',
             animationFrame: 0, animationSpeed: 5
         };
+
+        // --- NEW: Airplane object ---
+        const airplane = {
+            x: -400,
+            y: 150,
+            width: 100,
+            height: 30,
+            speed: 2.5,
+            bannerText: "",
+            isVisible: false,
+            timer: 25000, // Start almost ready to fly
+            interval: 30000 // 30 seconds
+        };
+
         let platforms = [];
         let clouds = [];
         let cameraX = 0;
@@ -245,20 +310,17 @@
         let winScore = 1000;
         let currentTheme;
         let highScores = [];
+
         let isMusicStarted = false;
         let isMuted = false;
-        const GITHUB_USERNAME = 'YOUR_GITHUB_USERNAME';
-        const GITHUB_REPO = 'YOUR_GITHUB_REPO';
-        const GITHUB_TOKEN = 'YOUR_GITHUB_TOKEN';
-        const SCORES_FILE_PATH = 'scores.json';
-        const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${SCORES_FILE_PATH}`;
-        let scoresFileSha = null;
+
         function startMusicIfNeeded() {
             if (!isMusicStarted && !isMuted) {
                 bgMusic.play().catch(e => console.error("Audio play failed:", e));
                 isMusicStarted = true;
             }
         }
+        
         muteButton.addEventListener('click', () => {
             isMuted = !isMuted;
             bgMusic.muted = isMuted;
@@ -266,93 +328,43 @@
             jumpSound.muted = isMuted;
             muteButton.innerText = isMuted ? '🔇' : '🔊';
         });
-        async function loadHighScores() {
-            try {
-                const response = await fetch(GITHUB_API_URL, {
-                    headers: { 'Accept': 'application/vnd.github.v3+json' }
-                });
-                if (response.status === 404) {
-                    console.warn("scores.json not found on GitHub. A new one will be created on the first high score.");
-                    highScores = [];
-                    scoresFileSha = null;
-                    return;
-                }
-                if (!response.ok) {
-                    throw new Error(`GitHub API Error: ${response.status} ${response.statusText}`);
-                }
-                const data = await response.json();
-                scoresFileSha = data.sha;
-                const content = atob(data.content);
-                highScores = JSON.parse(content);
-                highScores.sort((a, b) => b.score - a.score);
-                highScores = highScores.slice(0, 10);
-            } catch (error) {
-                console.error("Error loading high scores:", error);
-                highScores = [];
-            } finally {
-                updateHighScoreListDisplay();
+
+        closeLeaderboardButton.addEventListener('click', () => {
+            resetGame();
+        });
+
+        function loadHighScores() {
+            const scoresJSON = localStorage.getItem(HIGH_SCORES_KEY);
+            highScores = scoresJSON ? JSON.parse(scoresJSON) : [];
+            
+            // --- NEW: Update banner text ---
+            if (highScores.length > 0) {
+                airplane.bannerText = `LEADER: ${highScores[0].name} - ${highScores[0].score}`;
+            } else {
+                airplane.bannerText = "BE THE #1 PLAYER!";
             }
         }
-        async function saveHighScore() {
+        
+        function saveHighScore() {
             const playerName = (playerNameInput.value.trim() || 'AAA').toUpperCase();
-            if (!playerName) return;
             const newScore = { name: playerName, score: score };
+
             highScores.push(newScore);
             highScores.sort((a, b) => b.score - a.score);
-            highScores = highScores.slice(0, 10);
-            saveScoreButton.disabled = true;
-            saveScoreButton.innerText = 'SAVING...';
-            await updateScoresFileOnGitHub(highScores);
-            saveScoreButton.disabled = false;
+            highScores.splice(10); 
+
+            localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(highScores));
         }
-        async function updateScoresFileOnGitHub(scoresData) {
-            const content = JSON.stringify(scoresData, null, 2);
-            const contentBase64 = btoa(unescape(encodeURIComponent(content)));
-            const body = {
-                message: `score: ${score}`,
-                content: contentBase64,
-                branch: 'main'
-            };
-            if (scoresFileSha) {
-                body.sha = scoresFileSha;
-            }
-            try {
-                const response = await fetch(GITHUB_API_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify(body)
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to update scores file: ${response.status} ${errorData.message}`);
-                }
-                const data = await response.json();
-                scoresFileSha = data.content.sha;
-                console.log("High scores saved to GitHub!");
-            } catch (error) {
-                console.error("Error updating scores file:", error);
-                alert("Could not save high score to the leaderboard. Check console for details.");
-            }
-        }
-        function updateHighScoreListDisplay() {
-            if (highScores.length === 0) {
-                 highScoreList.innerHTML = '<li><span>LEADERBOARD IS EMPTY</span><span></span></li>';
-            } else {
-                 highScoreList.innerHTML = highScores
-                    .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
-                    .join('');
-            }
-        }
+
         function showGameOverScreen() {
             bgMusic.pause();
             bgMusic.currentTime = 0;
             gameOverSound.play().catch(e => console.error("Audio play failed:", e));
+
             finalScoreEl.innerText = score;
+            loadHighScores(); // Load scores to check against
             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+
             if (score > 0 && score > lowestHighScore) {
                 newHighScoreDiv.style.display = 'block';
                 saveScoreButton.innerText = 'SAVE & RESTART';
@@ -362,20 +374,28 @@
                 newHighScoreDiv.style.display = 'none';
                 saveScoreButton.innerText = 'PLAY AGAIN';
             }
-            updateHighScoreListDisplay();
+
+            highScoreList.innerHTML = highScores
+                .map((s, index) => `<li><span>${index + 1}. ${s.name}</span><span>${s.score}</span></li>`)
+                .join('');
+            
             gameOverScreen.style.display = 'flex';
         }
-        saveScoreButton.addEventListener('click', async () => {
-            const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
-            if (score > 0 && score > lowestHighScore) {
-                await saveHighScore();
-            }
-            resetGame();
+
+        saveScoreButton.addEventListener('click', () => {
+             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
+             if (score > 0 && score > lowestHighScore) {
+                 saveHighScore();
+             }
+             resetGame();
         });
-        async function resetGame() {
+
+        function resetGame() {
             gameOverSound.pause();
             gameOverSound.currentTime = 0;
             isMusicStarted = false;
+
+            loadHighScores();
             gameOverScreen.style.display = 'none';
             currentLevel = 1;
             winScore = 1000;
@@ -384,22 +404,26 @@
             castle = null;
             gameIsOver = false;
             currentTheme = levelThemes[0];
+
             stickman.x = 150; stickman.y = 400;
             stickman.vx = 0; stickman.vy = 0;
-            stickman.isJumping = false; animationState = 'idle';
+            stickman.isJumping = false; stickman.animationState = 'idle';
+
             platforms = [];
             const startPlatformWidth = 400;
             platforms.push({ x: 0, y: 500, width: startPlatformWidth, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = startPlatformWidth;
+
             clouds = [];
             for (let i = 0; i < 7; i++) {
                 spawnCloud(true);
             }
+
             while (farthestPlatformX < CANVAS_WIDTH * 1.5) {
                 generateNewPlatform();
             }
-            await loadHighScores(); 
         }
+
         function spawnCloud(isInitial = false) {
             const cloud = {
                 x: isInitial ? Math.random() * CANVAS_WIDTH : CANVAS_WIDTH + 100,
@@ -409,6 +433,7 @@
             };
             clouds.push(cloud);
         }
+
         function startNextLevel() {
             currentLevel++;
             winScore = currentLevel * 1000;
@@ -427,9 +452,10 @@
             platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = stickman.x - 100 + newStartPlatformWidth;
             cameraX = stickman.x - CANVAS_WIDTH / 4;
-            isMusicStarted = false;
+            isMusicStarted = false; 
             startMusicIfNeeded();
         }
+
         function spawnCastle() {
             const castleX = winScore * 10;
             const castleBaseY = MAX_Y_LEVEL;
@@ -453,6 +479,7 @@
             platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = castle.x + castle.width;
         }
+
         function generateNewPlatform() {
             const width = Math.floor(Math.random() * (MAX_PLATFORM_WIDTH - MIN_PLATFORM_WIDTH + 1)) + MIN_PLATFORM_WIDTH;
             const gap = Math.floor(Math.random() * (MAX_GAP_X - MIN_GAP_X + 1)) + MIN_GAP_X;
@@ -461,6 +488,7 @@
             platforms.push({ x, y, width, height: PLATFORM_HEIGHT });
             farthestPlatformX = x + width;
         }
+
         function drawClouds() {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
             for (const cloud of clouds) {
@@ -471,10 +499,69 @@
                 ctx.fill();
             }
         }
+        
+        // --- NEW: Function to draw the airplane ---
+        function drawAirplane() {
+            if (!airplane.isVisible) return;
+            
+            ctx.save();
+            ctx.translate(airplane.x, airplane.y);
+
+            // Banner
+            ctx.fillStyle = '#F5F5DC'; // Beige color for banner
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-10, 15);
+            ctx.lineTo(-280, 5);
+            ctx.lineTo(-290, 45);
+            ctx.lineTo(-20, 55);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Banner Text
+            ctx.fillStyle = 'black';
+            ctx.font = '14px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText(airplane.bannerText, -150, 38);
+
+
+            // Plane Body
+            ctx.fillStyle = '#C0C0C0'; // Silver
+            ctx.fillRect(0, 0, airplane.width, airplane.height);
+            ctx.strokeRect(0, 0, airplane.width, airplane.height);
+            
+            // Cockpit
+            ctx.fillStyle = '#87CEEB'; // Sky blue
+            ctx.fillRect(airplane.width - 25, 5, 20, 20);
+            ctx.strokeRect(airplane.width - 25, 5, 20, 20);
+
+            // Wing
+            ctx.fillStyle = '#A9A9A9'; // Dark gray
+            ctx.fillRect(20, -15, 20, airplane.height + 30);
+            ctx.strokeRect(20, -15, 20, airplane.height + 30);
+
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-20, 0);
+            ctx.lineTo(0, -20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Propeller
+            ctx.fillStyle = 'black';
+            ctx.fillRect(airplane.width, 12, 15, 6);
+
+            ctx.restore();
+        }
+
         function drawStickman() {
             ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
             const centerX = stickman.x + stickman.width / 2, headY = stickman.y,
-                bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
+                  bodyTopY = stickman.y + 10, bodyBottomY = stickman.y + 35, armY = bodyTopY + 5;
             ctx.beginPath(); ctx.arc(centerX, headY, 10, 0, Math.PI * 2); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(centerX, bodyTopY); ctx.lineTo(centerX, bodyBottomY); ctx.stroke();
             let legAngle = 0.5, armAngle = 0.5;
@@ -488,6 +575,7 @@
             ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX - 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(centerX, armY); ctx.lineTo(centerX + 15 * Math.sin(armAngle), armY + 15 * Math.cos(armAngle)); ctx.stroke();
         }
+
         function drawCastle() {
             if (!castle) return;
             ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
@@ -500,6 +588,7 @@
             ctx.fillStyle = '#6B4226';
             ctx.fillRect(castle.gate.x, castle.gate.y, castle.gate.w, castle.gate.h);
         }
+
         function drawPlatforms() {
             ctx.fillStyle = currentTheme.fill; ctx.strokeStyle = currentTheme.stroke; ctx.lineWidth = 2;
             for (const p of platforms) {
@@ -507,6 +596,7 @@
                 ctx.strokeRect(p.x, p.y, p.width, p.height);
             }
         }
+
         function drawHUD() {
             ctx.fillStyle = 'white';
             ctx.font = '20px "Press Start 2P"';
@@ -515,8 +605,30 @@
             ctx.textAlign = 'right';
             ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH - 60, 30);
         }
-        function update() {
+
+        // --- NEW: Function to update the airplane state ---
+        function updateAirplane(deltaTime) {
+            if (!airplane.isVisible) {
+                airplane.timer += deltaTime;
+                if (airplane.timer >= airplane.interval) {
+                    airplane.isVisible = true;
+                    airplane.timer = 0;
+                    airplane.x = -350; // Start off-screen left with banner
+                    airplane.y = 80 + Math.random() * 120; // Random flight path
+                }
+            } else {
+                airplane.x += airplane.speed;
+                if (airplane.x > CANVAS_WIDTH + 50) {
+                    airplane.isVisible = false;
+                }
+            }
+        }
+
+        function update(deltaTime) {
             if (gameIsOver) return;
+            
+            updateAirplane(deltaTime); // Update airplane state each frame
+
             for (const cloud of clouds) {
                 cloud.x -= cloud.speed;
             }
@@ -524,9 +636,11 @@
             if (Math.random() < 0.007) {
                 spawnCloud();
             }
+
             stickman.x += stickman.vx;
             stickman.vy += stickman.GRAVITY;
             stickman.y += stickman.vy;
+
             let onPlatform = false;
             for (const platform of platforms) {
                 if (stickman.vy >= 0 && (stickman.x + stickman.width) > platform.x && stickman.x < (platform.x + platform.width) && (stickman.y + stickman.height) >= platform.y && (stickman.y + stickman.height - stickman.vy) <= platform.y) {
@@ -536,25 +650,31 @@
                     break;
                 }
             }
+
             const cameraDeadzone = CANVAS_WIDTH / 3;
             if (stickman.x > cameraX + cameraDeadzone * 1.5) {
                 cameraX = stickman.x - cameraDeadzone * 1.5;
             }
+
             platforms = platforms.filter(p => p.x + p.width > cameraX);
             if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) {
                 generateNewPlatform();
             }
+
             if (stickman.isJumping) { stickman.animationState = 'jumping'; }
             else if (stickman.vx !== 0) { stickman.animationState = 'walking'; stickman.animationFrame++; }
             else { stickman.animationState = 'idle'; stickman.animationFrame = 0; }
             score = Math.max(score, Math.floor(stickman.x / 10));
+
             if (score >= winScore && !castle) {
                 spawnCastle();
             }
+            
             if (stickman.y > CANVAS_HEIGHT + 100) {
                 gameIsOver = true;
                 showGameOverScreen();
             }
+
             if (castle) {
                 const gate = castle.gate;
                 if (stickman.x < gate.x + gate.w &&
@@ -569,16 +689,21 @@
                 }
             }
         }
+
         let lastTime = 0;
         function gameLoop(timestamp) {
             const deltaTime = timestamp - lastTime;
             lastTime = timestamp;
-            if (!gameIsOver) {
+
+            if(!gameIsOver) {
                 handleInput();
-                update();
+                update(deltaTime); // Pass deltaTime to update function
             }
+
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             drawClouds();
+            drawAirplane(); // Draw the airplane in the background
+            
             ctx.save();
             ctx.translate(-cameraX, 0);
             drawPlatforms();
@@ -586,12 +711,14 @@
             drawStickman();
             ctx.restore();
             drawHUD();
+
             requestAnimationFrame(gameLoop);
         }
+
         const keys = {};
         window.addEventListener('keydown', (e) => {
             if (gameIsOver) {
-                if (e.key === 'Enter') saveScoreButton.click();
+                if(e.key === 'Enter') saveScoreButton.click();
                 return;
             };
             keys[e.key] = true;
@@ -600,6 +727,7 @@
                 stickman.vy = stickman.JUMP_POWER;
                 stickman.isJumping = true;
                 startMusicIfNeeded();
+                
                 jumpSound.currentTime = 0;
                 jumpSound.play().catch(e => console.error("Jump sound failed", e));
             }
@@ -612,21 +740,24 @@
                 }
             }
         });
+
         function handleInput() {
             if (gameIsOver) { stickman.vx = 0; return; }
-            if (keys['ArrowLeft'] || keys['a'] || keys['left']) {
-                stickman.vx = -stickman.MOVE_SPEED;
+            if (keys['ArrowLeft'] || keys['a'] || keys['left']) { 
+                stickman.vx = -stickman.MOVE_SPEED; 
                 startMusicIfNeeded();
             }
-            else if (keys['ArrowRight'] || keys['d'] || keys['right']) {
+            else if (keys['ArrowRight'] || keys['d'] || keys['right']) { 
                 stickman.vx = stickman.MOVE_SPEED;
                 startMusicIfNeeded();
             }
             else { stickman.vx = 0; }
         }
+
         const leftButton = document.getElementById('leftButton');
         const jumpButton = document.getElementById('jumpButton');
         const rightButton = document.getElementById('rightButton');
+
         function buttonPress(buttonId, isPressed) {
             switch (buttonId) {
                 case 'leftButton': keys['left'] = isPressed; break;
@@ -635,6 +766,7 @@
                     if (isPressed && !stickman.isJumping) {
                         stickman.vy = stickman.JUMP_POWER;
                         stickman.isJumping = true;
+                        
                         jumpSound.currentTime = 0;
                         jumpSound.play().catch(e => console.error("Jump sound failed", e));
                     }
@@ -646,16 +778,19 @@
             buttonPress(buttonId, isPressed);
             startMusicIfNeeded();
         }
+        
         ['touchstart', 'mousedown'].forEach(evt => {
             leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', true));
             rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', true));
             jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', true));
         });
+
         ['touchend', 'mouseup', 'touchcancel', 'mouseleave'].forEach(evt => {
             leftButton.addEventListener(evt, (e) => handleTouch(e, 'leftButton', false));
             rightButton.addEventListener(evt, (e) => handleTouch(e, 'rightButton', false));
             jumpButton.addEventListener(evt, (e) => handleTouch(e, 'jumpButton', false));
         });
+
         resetGame();
         gameLoop(0);
     </script>
