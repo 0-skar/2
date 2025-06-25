@@ -286,6 +286,19 @@
             animationFrame: 0, animationSpeed: 5
         };
 
+        // --- NEW: Airplane object ---
+        const airplane = {
+            x: -400,
+            y: 150,
+            width: 100,
+            height: 30,
+            speed: 2.5,
+            bannerText: "",
+            isVisible: false,
+            timer: 25000, // Start almost ready to fly
+            interval: 30000 // 30 seconds
+        };
+
         let platforms = [];
         let clouds = [];
         let cameraX = 0;
@@ -323,6 +336,13 @@
         function loadHighScores() {
             const scoresJSON = localStorage.getItem(HIGH_SCORES_KEY);
             highScores = scoresJSON ? JSON.parse(scoresJSON) : [];
+            
+            // --- NEW: Update banner text ---
+            if (highScores.length > 0) {
+                airplane.bannerText = `LEADER: ${highScores[0].name} - ${highScores[0].score}`;
+            } else {
+                airplane.bannerText = "BE THE #1 PLAYER!";
+            }
         }
         
         function saveHighScore() {
@@ -342,6 +362,7 @@
             gameOverSound.play().catch(e => console.error("Audio play failed:", e));
 
             finalScoreEl.innerText = score;
+            loadHighScores(); // Load scores to check against
             const lowestHighScore = highScores.length < 10 ? 0 : highScores[highScores.length - 1].score;
 
             if (score > 0 && score > lowestHighScore) {
@@ -416,26 +437,21 @@
         function startNextLevel() {
             currentLevel++;
             winScore = currentLevel * 1000;
-
             const oldTheme = currentTheme;
             do {
                 currentTheme = levelThemes[Math.floor(Math.random() * levelThemes.length)];
             } while (currentTheme === oldTheme && levelThemes.length > 1);
-
             stickman.x = castle.x + castle.width + 150;
             stickman.y = 400;
             stickman.vy = 0;
             stickman.isJumping = false;
-
             castle = null;
             platforms = [];
             gameIsOver = false;
-
             const newStartPlatformWidth = 400;
             platforms.push({ x: stickman.x - 100, y: 500, width: newStartPlatformWidth, height: PLATFORM_HEIGHT * 2 });
             farthestPlatformX = stickman.x - 100 + newStartPlatformWidth;
             cameraX = stickman.x - CANVAS_WIDTH / 4;
-            
             isMusicStarted = false; 
             startMusicIfNeeded();
         }
@@ -482,6 +498,64 @@
                 ctx.arc(cloud.x + cloud.radius * 0.7, cloud.y + 3, cloud.radius * 0.8, 0, Math.PI * 2);
                 ctx.fill();
             }
+        }
+        
+        // --- NEW: Function to draw the airplane ---
+        function drawAirplane() {
+            if (!airplane.isVisible) return;
+            
+            ctx.save();
+            ctx.translate(airplane.x, airplane.y);
+
+            // Banner
+            ctx.fillStyle = '#F5F5DC'; // Beige color for banner
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-10, 15);
+            ctx.lineTo(-280, 5);
+            ctx.lineTo(-290, 45);
+            ctx.lineTo(-20, 55);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Banner Text
+            ctx.fillStyle = 'black';
+            ctx.font = '14px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText(airplane.bannerText, -150, 38);
+
+
+            // Plane Body
+            ctx.fillStyle = '#C0C0C0'; // Silver
+            ctx.fillRect(0, 0, airplane.width, airplane.height);
+            ctx.strokeRect(0, 0, airplane.width, airplane.height);
+            
+            // Cockpit
+            ctx.fillStyle = '#87CEEB'; // Sky blue
+            ctx.fillRect(airplane.width - 25, 5, 20, 20);
+            ctx.strokeRect(airplane.width - 25, 5, 20, 20);
+
+            // Wing
+            ctx.fillStyle = '#A9A9A9'; // Dark gray
+            ctx.fillRect(20, -15, 20, airplane.height + 30);
+            ctx.strokeRect(20, -15, 20, airplane.height + 30);
+
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-20, 0);
+            ctx.lineTo(0, -20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Propeller
+            ctx.fillStyle = 'black';
+            ctx.fillRect(airplane.width, 12, 15, 6);
+
+            ctx.restore();
         }
 
         function drawStickman() {
@@ -532,8 +606,28 @@
             ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH - 60, 30);
         }
 
-        function update() {
+        // --- NEW: Function to update the airplane state ---
+        function updateAirplane(deltaTime) {
+            if (!airplane.isVisible) {
+                airplane.timer += deltaTime;
+                if (airplane.timer >= airplane.interval) {
+                    airplane.isVisible = true;
+                    airplane.timer = 0;
+                    airplane.x = -350; // Start off-screen left with banner
+                    airplane.y = 80 + Math.random() * 120; // Random flight path
+                }
+            } else {
+                airplane.x += airplane.speed;
+                if (airplane.x > CANVAS_WIDTH + 50) {
+                    airplane.isVisible = false;
+                }
+            }
+        }
+
+        function update(deltaTime) {
             if (gameIsOver) return;
+            
+            updateAirplane(deltaTime); // Update airplane state each frame
 
             for (const cloud of clouds) {
                 cloud.x -= cloud.speed;
@@ -603,11 +697,13 @@
 
             if(!gameIsOver) {
                 handleInput();
-                update();
+                update(deltaTime); // Pass deltaTime to update function
             }
 
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
             drawClouds();
+            drawAirplane(); // Draw the airplane in the background
+            
             ctx.save();
             ctx.translate(-cameraX, 0);
             drawPlatforms();
