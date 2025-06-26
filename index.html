@@ -116,10 +116,9 @@
     <audio id="bgMusic" loop src="https://raw.githubusercontent.com/0-skar/2/81989a14c120532cb7cc0a26c9c1378dcaca230d/pitupitu.mp3"></audio>
     <audio id="gameOverSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_741a499c71.mp3"></audio>
     <audio id="jumpSound" src="https://raw.githubusercontent.com/0-skar/2/20d1b8edd1d0a33c74210390d8b92e28a5ea5674/Jump.mp3"></audio>
-    <!-- UPDATED SHOOT SOUND -->
     <audio id="shootSound" src="https://raw.githubusercontent.com/0-skar/2/fb5c5800fe174b1318d1c2bd950f4b85bc0ef4e1/shoot.mp3"></audio>
-    <audio id="hitSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_a739ce3a02.mp3"></audio>
-    <audio id="explosionSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_19b9195d13.mp3"></audio>
+    <audio id="ghostHitSound" src="https://github.com/0-skar/2/raw/813273ddbd90acf169f860fd1afb08be28309fac/alien.mp3"></audio>
+    <audio id="explosionSound" src="https://raw.githubusercontent.com/0-skar/2/cd1e8a60eb2e0a6cee6e506f1cd3a620a1321f80/crash.mp3"></audio>
 
 
     <script>
@@ -136,7 +135,7 @@
         const gameOverSound = document.getElementById('gameOverSound');
         const jumpSound = document.getElementById('jumpSound');
         const shootSound = document.getElementById('shootSound');
-        const hitSound = document.getElementById('hitSound');
+        const ghostHitSound = document.getElementById('ghostHitSound');
         const explosionSound = document.getElementById('explosionSound');
         const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
 
@@ -163,7 +162,7 @@
         let highScores = [];
 
         function startMusicIfNeeded() { if (!isMusicStarted && !isMuted) bgMusic.play().catch(e => {}); }
-        muteButton.addEventListener('click', () => { isMuted = !isMuted; [bgMusic, gameOverSound, jumpSound, shootSound, hitSound, explosionSound].forEach(s => s.muted = isMuted); muteButton.innerText = isMuted ? '🔇' : '🔊'; if (!isMuted && !isMusicStarted) startMusicIfNeeded(); });
+        muteButton.addEventListener('click', () => { isMuted = !isMuted; [bgMusic, gameOverSound, jumpSound, shootSound, ghostHitSound, explosionSound].forEach(s => s.muted = isMuted); muteButton.innerText = isMuted ? '🔇' : '🔊'; if (!isMuted && !isMusicStarted) startMusicIfNeeded(); });
         closeLeaderboardButton.addEventListener('click', () => { resetGame(); });
 
         function setControlsForState(state) {
@@ -218,7 +217,7 @@
             for (let b = bullets.length - 1; b >= 0; b--) {
                 for (let g = ghosts.length - 1; g >= 0; g--) {
                     if (bullets[b].x < ghosts[g].x + ghosts[g].width && bullets[b].x + bullets[b].width > ghosts[g].x && bullets[b].y < ghosts[g].y + ghosts[g].height && bullets[b].y + bullets[b].height > ghosts[g].y) {
-                        if (!isMuted) hitSound.play(); score += 50; levelScore += 50; bullets.splice(b, 1); ghosts.splice(g, 1); break;
+                        if (!isMuted) ghostHitSound.play(); score += 50; levelScore += 50; bullets.splice(b, 1); ghosts.splice(g, 1); break;
                     }
                 }
             }
