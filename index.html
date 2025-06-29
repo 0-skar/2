@@ -6,11 +6,55 @@
     <title>Endless Stickman Platformer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background-color: #34495e; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; font-family: 'Press Start 2P', sans-serif; color: white; text-shadow: 2px 2px #000000; }
-        canvas { border: 2px solid black; background-color: #87CEEB; }
-        #gameContainer { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
-        #gameCanvas { max-width: 100%; max-height: 100%; object-fit: contain; }
-        #controls { display: flex; justify-content: space-between; align-items: flex-end; position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; padding: 20px 30px; box-sizing: border-box; z-index: 10; pointer-events: none; }
+        /* --- START OF CSS --- */
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            background-color: #34495e;
+            font-family: 'Press Start 2P', sans-serif;
+            color: white;
+            text-shadow: 2px 2px #000000;
+        }
+
+        #gameContainer {
+            position: fixed; /* Make container cover the whole screen */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex; /* Use flexbox to center the canvas */
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            border: 2px solid black;
+            background-color: #87CEEB;
+            /* Use viewport units for max size and object-fit to maintain aspect ratio */
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+        }
+        /* --- END OF CSS --- */
+
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            padding: 0 30px;
+            box-sizing: border-box;
+            z-index: 10;
+            pointer-events: none;
+        }
+
         @media (min-width: 801px) { #controls { display: none !important; } }
         #action-button-container, #d-pad-container { pointer-events: auto; }
         #d-pad { display: grid; grid-template-columns: 55px 55px 55px; grid-template-rows: 55px 55px 55px; gap: 2px; }
@@ -45,8 +89,8 @@
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
         <div id="controls">
-            <div id="d-pad-container"><div id="d-pad"><button class="d-pad-button" id="upButton">↑</button><button class="d-pad-button" id="leftButton">←</button><button class="d-pad-button" id="rightButton">→</button><button class="d-pad-button" id="downButton">↓</button></div></div>
             <div id="action-button-container"><button class="button" id="jumpButton">Jump</button></div>
+            <div id="d-pad-container"><div id="d-pad"><button class="d-pad-button" id="upButton">↑</button><button class="d-pad-button" id="leftButton">←</button><button class="d-pad-button" id="rightButton">→</button><button class="d-pad-button" id="downButton">↓</button></div></div>
         </div>
     </div>
     
@@ -114,7 +158,9 @@
         }
 
         function update(deltaTime) {
-            if (gameIsOver) { updateExplosions(deltaTime); return; }
+            updateExplosions(deltaTime); 
+            if (gameIsOver) { return; } 
+
             clouds.forEach(c => c.x -= c.speed); clouds = clouds.filter(c => c.x + c.radius * 2 > 0); if (Math.random() < 0.007) spawnCloud();
             
             if (gameState === 'platformer') { updatePlatformer(); updateBannerPlane(deltaTime); } 
@@ -174,7 +220,7 @@
                 for (let g = ghosts.length - 1; g >= 0; g--) {
                     if (bullets[b].x < ghosts[g].x + ghosts[g].width && bullets[b].x + bullets[b].width > ghosts[g].x && bullets[b].y < ghosts[g].y + ghosts[g].height && bullets[b].y + bullets[b].height > ghosts[g].y) {
                         if (!isMuted) ghostHitSound.play(); 
-                        score += 20; levelScore += 20; // UPDATED SCORE
+                        score += 20; levelScore += 20;
                         bullets.splice(b, 1); ghosts.splice(g, 1); break;
                     }
                 }
@@ -225,13 +271,22 @@
                         ghost.health--;
                         if (!isMuted) ghostHitSound.play();
                         bullets.splice(b, 1);
-                        if (ghost.health <= 0) {
-                            score += 30; levelScore += 30;
-                            ghosts.splice(g, 1);
-                        } else {
-                            score += 20; levelScore += 20;
-                            ghost.color = '#0074d9';
+                        // --- START OF CHANGES ---
+                        // Expanded hit logic for multi-stage ghosts
+                        if (ghost.health === 2) { // First hit
+                            score += 10;
+                            levelScore += 10;
+                            ghost.color = '#0074d9'; // Turn blue
+                        } else if (ghost.health === 1) { // Second hit
+                            score += 10;
+                            levelScore += 10;
+                            ghost.color = '#ff4136'; // Turn red
+                        } else if (ghost.health <= 0) { // Final hit
+                            score += 10;
+                            levelScore += 10;
+                            ghosts.splice(g, 1); // Destroy ghost
                         }
+                        // --- END OF CHANGES ---
                         break; 
                     }
                 }
@@ -356,10 +411,18 @@
         function createGhostFormation() {
             ghosts = []; const rows = 4, cols = 8, spacing = 50;
             ghostFormation.width = (cols - 1) * spacing;
+            
+            // --- START OF CHANGES ---
+            // Ghosts are stronger on level 4 and beyond
+            const initialHealth = (currentLevel >= 4) ? 3 : 2;
+            // --- END OF CHANGES ---
+
             for(let r = 0; r < rows; r++) {
                 for(let c = 0; c < cols; c++) {
                     const color = ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][r % 4];
-                    ghosts.push({ x: ghostFormation.x + c * spacing, y: ghostFormation.y + r * spacing, width: 39, height: 39, speed: 1, color: color, health: 2 });
+                    // --- START OF CHANGES ---
+                    ghosts.push({ x: ghostFormation.x + c * spacing, y: ghostFormation.y + r * spacing, width: 39, height: 39, speed: 1, color: color, health: initialHealth });
+                    // --- END OF CHANGES ---
                 }
             }
         }
@@ -441,7 +504,13 @@
             ctx.restore();
         }
         function drawPlayerPlane() { ctx.save(); ctx.translate(playerPlane.x, playerPlane.y); ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, playerPlane.width, playerPlane.height); ctx.strokeRect(0, 0, playerPlane.width, playerPlane.height); ctx.fillStyle = '#87CEEB'; ctx.fillRect(playerPlane.width - 25, 5, 20, 20); ctx.strokeRect(playerPlane.width - 25, 5, 20, 20); ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, playerPlane.height + 30); ctx.strokeRect(20, -15, 20, playerPlane.height + 30); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20, 0); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'black'; ctx.fillRect(playerPlane.width, 12, 15, 6); if (playerPlane.isLandingGearDown) { ctx.fillStyle = '#444'; ctx.fillRect(30, playerPlane.height, 10, 15); ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(35, playerPlane.height + 20, 8, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }
-        function drawGhost(ghost) { const p = ghost.width / 13; ctx.fillStyle = ghost.color; ctx.fillRect(ghost.x + p*3, ghost.y + 0, p*7, p); ctx.fillRect(ghost.x + p*2, ghost.y + p, p*9, p); ctx.fillRect(ghost.x + p, ghost.y + p*2, p*11, p*6); ctx.fillRect(ghost.x + 0, ghost.y + p*4, p*13, p*4); ctx.fillRect(ghost.x + 0, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*2, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*4, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*6, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*8, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*10, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*12, ghost.y + p*8, p, p*3); ctx.fillStyle = 'white'; ctx.fillRect(ghost.x + p*3, ghost.y + p*4, p*3, p*3); ctx.fillRect(ghost.x + p*7, ghost.y + p*4, p*3, p*3); ctx.fillStyle = (ghost.health < 2 && gameState === 'tank') ? 'white' : '#00f'; ctx.fillRect(ghost.x + p*4, ghost.y + p*5, p*2, p*2); ctx.fillRect(ghost.x + p*7, ghost.y + p*5, p*2, p*2); }
+        function drawGhost(ghost) { const p = ghost.width / 13; ctx.fillStyle = ghost.color; ctx.fillRect(ghost.x + p*3, ghost.y + 0, p*7, p); ctx.fillRect(ghost.x + p*2, ghost.y + p, p*9, p); ctx.fillRect(ghost.x + p, ghost.y + p*2, p*11, p*6); ctx.fillRect(ghost.x + 0, ghost.y + p*4, p*13, p*4); ctx.fillRect(ghost.x + 0, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*2, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*4, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*6, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*8, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*10, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*12, ghost.y + p*8, p, p*3); ctx.fillStyle = 'white'; ctx.fillRect(ghost.x + p*3, ghost.y + p*4, p*3, p*3); ctx.fillRect(ghost.x + p*7, ghost.y + p*4, p*3, p*3); 
+            // --- START OF CHANGES ---
+            // Pupil changes color when health is less than the max (3)
+            ctx.fillStyle = (ghost.health < 3 && gameState === 'tank') ? 'white' : '#00f'; 
+            // --- END OF CHANGES ---
+            ctx.fillRect(ghost.x + p*4, ghost.y + p*5, p*2, p*2); ctx.fillRect(ghost.x + p*7, ghost.y + p*5, p*2, p*2); 
+        }
         function drawClouds() { ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; clouds.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2); ctx.arc(c.x - c.radius * 0.6, c.y + 5, c.radius * 0.7, 0, Math.PI * 2); ctx.arc(c.x + c.radius * 0.7, c.y + 3, c.radius * 0.8, 0, Math.PI * 2); ctx.fill(); }); }
         function drawBullet(b) { ctx.fillStyle = (b.width > 10) ? '#ffcc00' : 'yellow'; ctx.fillRect(b.x, b.y, b.width, b.height); }
         function drawUfoBombs() { ufoBombs.forEach(b => { ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.width / 2, 0, Math.PI * 2); ctx.fill(); }); }
