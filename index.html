@@ -6,7 +6,6 @@
     <title>Endless Stickman Platformer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* --- START OF CSS --- */
         html, body {
             width: 100%;
             height: 100%;
@@ -38,30 +37,112 @@
             max-height: 100vh;
             object-fit: contain;
         }
-        /* --- END OF CSS --- */
-
+        
+        /* --- START OF CHANGES --- */
         #controls {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: center; /* Changed to center for vertical symmetry */
             position: fixed;
-            bottom: 0;
+            bottom: 20px;
             left: 0;
             width: 100%;
-            height: 200px;
+            /* Removed fixed height for more robust alignment */
             padding: 0 30px;
             box-sizing: border-box;
             z-index: 10;
             pointer-events: none;
         }
+        /* --- END OF CHANGES --- */
 
         @media (min-width: 801px) { #controls { display: none !important; } }
         #action-button-container, #d-pad-container { pointer-events: auto; }
-        #d-pad { display: grid; grid-template-columns: 55px 55px 55px; grid-template-rows: 55px 55px 55px; gap: 2px; }
-        .d-pad-button, #jumpButton { background-color: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; -webkit-tap-highlight-color: transparent; }
-        .d-pad-button { font-size: 28px; }
-        #jumpButton { width: 80px; height: 80px; background-color: rgba(255, 20, 20, 0.4); font-size: 1em; font-family: 'Press Start 2P', sans-serif; text-align: center; }
-        #upButton { grid-column: 2; grid-row: 1; } #leftButton { grid-column: 1; grid-row: 2; } #rightButton { grid-column: 3; grid-row: 2; } #downButton { grid-column: 2; grid-row: 3; }
+        
+        #d-pad {
+            position: relative;
+            width: 150px; /* Increased size to create a gap (70px + 10px gap + 70px) */
+            height: 150px;
+        }
+        
+        .d-pad-button {
+            background-color: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.7);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            margin: 0;
+        }
+
+        /* Create a CSS arrow using a pseudo-element */
+        .d-pad-button::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-style: solid;
+            /* Creates an upward-pointing triangle */
+            border-width: 0 12px 20px 12px;
+            border-color: transparent transparent white transparent;
+            position: absolute;
+            /* Centering the triangle */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -60%); /* Fine-tune vertical alignment */
+        }
+        
+        /* Rotate the triangle for other directions */
+        #rightButton::before {
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+        #downButton::before {
+            transform: translate(-50%, -40%) rotate(180deg);
+        }
+        #leftButton::before {
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
+
+        #jumpButton {
+            background-color: rgba(255, 20, 20, 0.4);
+            border: 2px solid rgba(255,255,255,0.7);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            width: 80px;
+            height: 80px;
+            font-size: 1em;
+            font-family: 'Press Start 2P', sans-serif;
+            text-align: center;
+        }
+        
+        #upButton {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #leftButton {
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        #rightButton {
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+        }
+        #downButton {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 20; }
         #gameOverScreen h1 { font-size: 3em; margin-bottom: 20px; color: #ff4136; } #gameOverScreen h2 { font-size: 1.5em; margin-bottom: 30px; }
         #newHighScore { margin-bottom: 20px; }
@@ -88,10 +169,19 @@
             <div id="highScoreContainer"><h3>- LEADERBOARD -</h3><ol id="highScoreList"></ol></div>
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
+        
         <div id="controls">
             <div id="action-button-container"><button class="button" id="jumpButton">Jump</button></div>
-            <div id="d-pad-container"><div id="d-pad"><button class="d-pad-button" id="upButton">↑</button><button class="d-pad-button" id="leftButton">←</button><button class="d-pad-button" id="rightButton">→</button><button class="d-pad-button" id="downButton">↓</button></div></div>
+            <div id="d-pad-container">
+                <div id="d-pad">
+                    <button class="d-pad-button" id="upButton"></button>
+                    <button class="d-pad-button" id="leftButton"></button>
+                    <button class="d-pad-button" id="rightButton"></button>
+                    <button class="d-pad-button" id="downButton"></button>
+                </div>
+            </div>
         </div>
+
     </div>
     
     <!-- AUDIO -->
@@ -271,22 +361,21 @@
                         ghost.health--;
                         if (!isMuted) ghostHitSound.play();
                         bullets.splice(b, 1);
-                        // --- START OF CHANGES ---
-                        // Expanded hit logic for multi-stage ghosts
-                        if (ghost.health === 2) { // First hit
+                        
+                        if (ghost.health === 2) { 
                             score += 10;
                             levelScore += 10;
-                            ghost.color = '#0074d9'; // Turn blue
-                        } else if (ghost.health === 1) { // Second hit
+                            ghost.color = '#0074d9'; 
+                        } else if (ghost.health === 1) { 
                             score += 10;
                             levelScore += 10;
-                            ghost.color = '#ff4136'; // Turn red
-                        } else if (ghost.health <= 0) { // Final hit
+                            ghost.color = '#ff4136'; 
+                        } else if (ghost.health <= 0) { 
                             score += 10;
                             levelScore += 10;
-                            ghosts.splice(g, 1); // Destroy ghost
+                            ghosts.splice(g, 1); 
                         }
-                        // --- END OF CHANGES ---
+                        
                         break; 
                     }
                 }
@@ -412,17 +501,12 @@
             ghosts = []; const rows = 4, cols = 8, spacing = 50;
             ghostFormation.width = (cols - 1) * spacing;
             
-            // --- START OF CHANGES ---
-            // Ghosts are stronger on level 4 and beyond
             const initialHealth = (currentLevel >= 4) ? 3 : 2;
-            // --- END OF CHANGES ---
 
             for(let r = 0; r < rows; r++) {
                 for(let c = 0; c < cols; c++) {
                     const color = ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][r % 4];
-                    // --- START OF CHANGES ---
                     ghosts.push({ x: ghostFormation.x + c * spacing, y: ghostFormation.y + r * spacing, width: 39, height: 39, speed: 1, color: color, health: initialHealth });
-                    // --- END OF CHANGES ---
                 }
             }
         }
@@ -505,10 +589,9 @@
         }
         function drawPlayerPlane() { ctx.save(); ctx.translate(playerPlane.x, playerPlane.y); ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, playerPlane.width, playerPlane.height); ctx.strokeRect(0, 0, playerPlane.width, playerPlane.height); ctx.fillStyle = '#87CEEB'; ctx.fillRect(playerPlane.width - 25, 5, 20, 20); ctx.strokeRect(playerPlane.width - 25, 5, 20, 20); ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, playerPlane.height + 30); ctx.strokeRect(20, -15, 20, playerPlane.height + 30); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20, 0); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'black'; ctx.fillRect(playerPlane.width, 12, 15, 6); if (playerPlane.isLandingGearDown) { ctx.fillStyle = '#444'; ctx.fillRect(30, playerPlane.height, 10, 15); ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(35, playerPlane.height + 20, 8, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }
         function drawGhost(ghost) { const p = ghost.width / 13; ctx.fillStyle = ghost.color; ctx.fillRect(ghost.x + p*3, ghost.y + 0, p*7, p); ctx.fillRect(ghost.x + p*2, ghost.y + p, p*9, p); ctx.fillRect(ghost.x + p, ghost.y + p*2, p*11, p*6); ctx.fillRect(ghost.x + 0, ghost.y + p*4, p*13, p*4); ctx.fillRect(ghost.x + 0, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*2, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*4, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*6, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*8, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*10, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*12, ghost.y + p*8, p, p*3); ctx.fillStyle = 'white'; ctx.fillRect(ghost.x + p*3, ghost.y + p*4, p*3, p*3); ctx.fillRect(ghost.x + p*7, ghost.y + p*4, p*3, p*3); 
-            // --- START OF CHANGES ---
-            // Pupil changes color when health is less than the max (3)
+            
             ctx.fillStyle = (ghost.health < 3 && gameState === 'tank') ? 'white' : '#00f'; 
-            // --- END OF CHANGES ---
+            
             ctx.fillRect(ghost.x + p*4, ghost.y + p*5, p*2, p*2); ctx.fillRect(ghost.x + p*7, ghost.y + p*5, p*2, p*2); 
         }
         function drawClouds() { ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; clouds.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2); ctx.arc(c.x - c.radius * 0.6, c.y + 5, c.radius * 0.7, 0, Math.PI * 2); ctx.arc(c.x + c.radius * 0.7, c.y + 3, c.radius * 0.8, 0, Math.PI * 2); ctx.fill(); }); }
