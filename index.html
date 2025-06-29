@@ -10,72 +10,20 @@
         canvas { border: 2px solid black; background-color: #87CEEB; }
         #gameContainer { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; position: relative; }
         #gameCanvas { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
-        /* --- UNIFIED MOBILE CONTROLLER --- */
-        #controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 20px 30px;
-            box-sizing: border-box;
-            z-index: 10;
-            pointer-events: none;
-        }
+        #controls { display: flex; justify-content: space-between; align-items: flex-end; position: fixed; bottom: 0; left: 0; width: 100%; height: 100%; padding: 20px 30px; box-sizing: border-box; z-index: 10; pointer-events: none; }
         @media (min-width: 801px) { #controls { display: none !important; } }
-
-        #action-button-container, #d-pad-container {
-            pointer-events: auto;
-        }
-        
-        #d-pad {
-            display: grid;
-            grid-template-columns: 55px 55px 55px;
-            grid-template-rows: 55px 55px 55px;
-            gap: 2px;
-        }
-
-        .d-pad-button, #jumpButton {
-            background-color: rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.7);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            -webkit-tap-highlight-color: transparent;
-        }
+        #action-button-container, #d-pad-container { pointer-events: auto; }
+        #d-pad { display: grid; grid-template-columns: 55px 55px 55px; grid-template-rows: 55px 55px 55px; gap: 2px; }
+        .d-pad-button, #jumpButton { background-color: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; -webkit-tap-highlight-color: transparent; }
         .d-pad-button { font-size: 28px; }
-        
-        #jumpButton {
-            width: 80px;
-            height: 80px;
-            background-color: rgba(255, 20, 20, 0.4);
-            font-size: 1em;
-            font-family: 'Press Start 2P', sans-serif;
-            text-align: center;
-        }
-        
-        #upButton { grid-column: 2; grid-row: 1; }
-        #leftButton { grid-column: 1; grid-row: 2; }
-        #rightButton { grid-column: 3; grid-row: 2; }
-        #downButton { grid-column: 2; grid-row: 3; }
-        
-        /* --- Standard Game Over and other styles --- */
+        #jumpButton { width: 80px; height: 80px; background-color: rgba(255, 20, 20, 0.4); font-size: 1em; font-family: 'Press Start 2P', sans-serif; text-align: center; }
+        #upButton { grid-column: 2; grid-row: 1; } #leftButton { grid-column: 1; grid-row: 2; } #rightButton { grid-column: 3; grid-row: 2; } #downButton { grid-column: 2; grid-row: 3; }
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 20; }
-        #gameOverScreen h1 { font-size: 3em; margin-bottom: 20px; color: #ff4136; }
-        #gameOverScreen h2 { font-size: 1.5em; margin-bottom: 30px; }
+        #gameOverScreen h1 { font-size: 3em; margin-bottom: 20px; color: #ff4136; } #gameOverScreen h2 { font-size: 1.5em; margin-bottom: 30px; }
         #newHighScore { margin-bottom: 20px; }
         #playerNameInput { width: 250px; padding: 10px; font-family: 'Press Start 2P', sans-serif; font-size: 1em; text-align: center; background: #222; color: white; border: 2px solid white; text-transform: uppercase; }
         #saveScoreButton { margin-top: 15px; padding: 15px 30px; font-size: 1em; background: #0074d9; border: 2px solid white; color: white; cursor: pointer; font-family: 'Press Start 2P', sans-serif; }
-        #highScoreContainer h3 { font-size: 1.2em; margin-bottom: 10px; color: #ffd700; }
-        #highScoreList { list-style-type: none; padding: 0; width: 350px; font-size: 0.9em; }
+        #highScoreContainer h3 { font-size: 1.2em; margin-bottom: 10px; color: #ffd700; } #highScoreList { list-style-type: none; padding: 0; width: 350px; font-size: 0.9em; }
         #highScoreList li { display: flex; justify-content: space-between; padding: 5px 0; }
         #muteButton { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.3); color: white; border: 2px solid white; border-radius: 5px; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 15; user-select: none; }
         #backButton { position: absolute; top: 15px; left: 15px; padding: 10px 15px; background: rgba(0,0,0,0.3); color: white; text-decoration: none; border: 2px solid white; border-radius: 5px; font-size: 1em; font-family: 'Press Start 2P', sans-serif; cursor: pointer; z-index: 15; user-select: none; }
@@ -96,19 +44,9 @@
             <div id="highScoreContainer"><h3>- LEADERBOARD -</h3><ol id="highScoreList"></ol></div>
             <button id="saveScoreButton">PLAY AGAIN</button>
         </div>
-        <!-- UNIFIED CONTROLLER HTML STRUCTURE -->
         <div id="controls">
-            <div id="action-button-container">
-                <button class="button" id="jumpButton">Jump</button>
-            </div>
-            <div id="d-pad-container">
-                <div id="d-pad">
-                    <button class="d-pad-button" id="upButton">↑</button>
-                    <button class="d-pad-button" id="leftButton">←</button>
-                    <button class="d-pad-button" id="rightButton">→</button>
-                    <button class="d-pad-button" id="downButton">↓</button>
-                </div>
-            </div>
+            <div id="d-pad-container"><div id="d-pad"><button class="d-pad-button" id="upButton">↑</button><button class="d-pad-button" id="leftButton">←</button><button class="d-pad-button" id="rightButton">→</button><button class="d-pad-button" id="downButton">↓</button></div></div>
+            <div id="action-button-container"><button class="button" id="jumpButton">Jump</button></div>
         </div>
     </div>
     
@@ -119,7 +57,6 @@
     <audio id="shootSound" src="https://raw.githubusercontent.com/0-skar/2/fb5c5800fe174b1318d1c2bd950f4b85bc0ef4e1/shoot.mp3"></audio>
     <audio id="ghostHitSound" src="https://github.com/0-skar/2/raw/813273ddbd90acf169f860fd1afb08be28309fac/alien.mp3"></audio>
     <audio id="explosionSound" src="https://raw.githubusercontent.com/0-skar/2/cd1e8a60eb2e0a6cee6e506f1cd3a620a1321f80/crash.mp3"></audio>
-
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -148,15 +85,20 @@
         
         const platformThemes = [ '#6B4226', '#78909C', '#B71C1C', '#1B5E20', '#4A148C', '#FF6F00' ];
         let currentPlatformColor = platformThemes[0];
+        const ufoHitColors = ['#ff4136', '#ff851b', '#ffd700', '#2ecc40', '#0074d9', '#b10dc9'];
         
         let gameState = 'platformer', levelScore = 0, platformingLevelStartScore = 0;
-        const PLATFORMING_GOAL = 1000, FLYING_LEVEL_GOAL = 1000;
+        const PLATFORMING_GOAL = 1000, FLYING_LEVEL_GOAL = 1000, TANK_LEVEL_TOTAL_GOAL = 1000;
+        const TANK_LEVEL_GHOST_GOAL = 900;
 
-        const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false };
-        const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false, isLandingGearDown: false };
+        const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, isVisible: true };
+        const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false };
         const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 25000, interval: 30000 };
-
-        let bullets = [], ghosts = [], platforms = [], clouds = [], explosions = [];
+        const tank = { x: 300, y: 450, width: 120, height: 50, vx: 0, speed: 3, isVisible: false, barrelLength: 50, wheelRotation: 0 };
+        const ufo = { x: CANVAS_WIDTH / 2, y: 50, width: 180, height: 70, vx: 2, isVisible: false, color: '#757575'};
+        const ghostFormation = { x: 100, y: 120, vx: 1, vy: 20, stepDown: false, width: 0 };
+        
+        let bullets = [], ghosts = [], platforms = [], clouds = [], explosions = [], ufoBombs = [];
         let cameraX = 0, score = 0, farthestPlatformX = 0, castle = null;
         let gameIsOver = false, currentLevel = 1, isMusicStarted = false, isMuted = false;
         let highScores = [];
@@ -166,78 +108,163 @@
         closeLeaderboardButton.addEventListener('click', () => { resetGame(); });
 
         function setControlsForState(state) {
-            const up = document.getElementById('upButton'), down = document.getElementById('downButton'), jump = document.getElementById('jumpButton');
-            if (state === 'flying' || state === 'landing') { jump.innerText = 'Shoot'; up.style.visibility = 'visible'; down.style.visibility = 'visible'; } 
-            else { jump.innerText = 'Jump'; up.style.visibility = 'hidden'; down.style.visibility = 'hidden'; }
+            const up = document.getElementById('upButton'), down = document.getElementById('downButton'), jump = document.getElementById('jumpButton'), left = document.getElementById('leftButton'), right = document.getElementById('rightButton');
+            if (state === 'flying') { jump.innerText = 'Shoot'; up.style.visibility = 'visible'; down.style.visibility = 'visible'; left.style.visibility = 'visible'; right.style.visibility = 'visible';} 
+            else if (state === 'tank') { jump.innerText = 'Shoot'; up.style.visibility = 'hidden'; down.style.visibility = 'hidden'; left.style.visibility = 'visible'; right.style.visibility = 'visible'; }
+            else { jump.innerText = 'Jump'; up.style.visibility = 'hidden'; down.style.visibility = 'hidden'; left.style.visibility = 'visible'; right.style.visibility = 'visible';}
         }
 
         function update(deltaTime) {
             if (gameIsOver) { updateExplosions(deltaTime); return; }
             clouds.forEach(c => c.x -= c.speed); clouds = clouds.filter(c => c.x + c.radius * 2 > 0); if (Math.random() < 0.007) spawnCloud();
+            
             if (gameState === 'platformer') { updatePlatformer(); updateBannerPlane(deltaTime); } 
             else if (gameState === 'takeoff') updateTakeoff();
             else if (gameState === 'flying') updateFlying();
-            else if (gameState === 'landing') updateLanding();
+            else if (gameState === 'tank') { updateTank(); }
         }
 
         function updatePlatformer() {
             stickman.vy += stickman.GRAVITY; stickman.x += stickman.vx; stickman.y += stickman.vy;
-            let currentPlatformingScore = Math.floor(stickman.x / 10);
-            score = Math.max(score, platformingLevelStartScore + currentPlatformingScore);
+            let currentPlatformingScore = Math.floor(stickman.x / 10); score = Math.max(score, platformingLevelStartScore + currentPlatformingScore);
             platforms.forEach(p => { if (stickman.vy >= 0 && (stickman.x + stickman.width) > p.x && stickman.x < (p.x + p.width) && (stickman.y + stickman.height) >= p.y && (stickman.y + stickman.height - stickman.vy) <= p.y) { stickman.y = p.y - stickman.height; stickman.vy = 0; stickman.isJumping = false; }});
             if (stickman.x > cameraX + (CANVAS_WIDTH / 3) * 1.5) cameraX = stickman.x - (CANVAS_WIDTH / 3) * 1.5;
             platforms = platforms.filter(p => p.x + p.width > cameraX); if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) generateNewPlatform();
             if (score >= platformingLevelStartScore + PLATFORMING_GOAL && !castle) spawnCastle();
             if (stickman.y > CANVAS_HEIGHT + 100) { gameIsOver = true; showGameOverScreen(); }
-            if (castle && stickman.x > castle.gate.x && stickman.x < castle.gate.x + castle.gate.w) { gameIsOver = true; setTimeout(prepareTakeoffLevel, 500); }
+            
+            if (castle && stickman.x > castle.gate.x && stickman.x < castle.gate.x + castle.gate.w) {
+                const nextLevelType = (currentLevel) % 4;
+                if (nextLevelType === 1) { setTimeout(prepareTakeoffLevel, 200); } 
+                else if (nextLevelType === 3) { setTimeout(prepareTankLevel, 200); }
+                castle = null; 
+            }
         }
         function updateTakeoff() {
             stickman.vy += stickman.GRAVITY; stickman.x += stickman.vx; stickman.y += stickman.vy;
             const runway = platforms[0]; if (stickman.y + stickman.height > runway.y) { stickman.y = runway.y - stickman.height; stickman.vy = 0; stickman.isJumping = false; }
             if (stickman.x < 0) stickman.x = 0; if (stickman.x + stickman.width > CANVAS_WIDTH) stickman.x = CANVAS_WIDTH - stickman.width;
+            
             if (stickman.x < playerPlane.x + playerPlane.width && stickman.x + stickman.width > playerPlane.x && stickman.y < playerPlane.y + playerPlane.height && stickman.y + stickman.height > playerPlane.y) {
-                gameState = 'flying'; levelScore = 0; platforms = []; ghosts = []; bullets = []; playerPlane.vx = playerPlane.speed; setControlsForState('flying');
+                stickman.isVisible = false; levelScore = 0;
+                gameState = 'flying'; playerPlane.vx = playerPlane.speed; setControlsForState('flying');
             }
         }
-        function updateFlyingAndLandingSharedLogic() {
+        function updateFlying() {
             playerPlane.x += playerPlane.vx; playerPlane.y += playerPlane.vy;
             if (playerPlane.x < 0) playerPlane.x = 0; if (playerPlane.x + playerPlane.width > CANVAS_WIDTH) playerPlane.x = CANVAS_WIDTH - playerPlane.width;
             if (playerPlane.y < 0) playerPlane.y = 0; if (playerPlane.y + playerPlane.height > CANVAS_HEIGHT) playerPlane.y = CANVAS_HEIGHT - playerPlane.height;
-            bullets.forEach(b => b.x += b.speed); bullets = bullets.filter(b => b.x < CANVAS_WIDTH);
+            bullets.forEach(b => b.x += b.vx); bullets = bullets.filter(b => b.x < CANVAS_WIDTH);
             ghosts.forEach(g => {
-                g.x -= g.speed; const verticalDifference = (playerPlane.y + playerPlane.height / 2) - (g.y + g.height / 2); g.y += Math.sign(verticalDifference) * 0.5;
+                g.x -= g.speed;
+                if (g.y < playerPlane.y) g.y += 0.5;
+                else if (g.y > playerPlane.y) g.y -= 0.5;
+
                 if (playerPlane.x < g.x + g.width && playerPlane.x + playerPlane.width > g.x && playerPlane.y < g.y + g.height && playerPlane.y + playerPlane.height > g.y) {
-                    triggerExplosion(playerPlane.x + playerPlane.width/2, playerPlane.y + playerPlane.height/2);
-                    playerPlane.isVisible = false; gameIsOver = true; 
-                    if (!isMuted) explosionSound.play();
-                    setTimeout(showGameOverScreen, 1000);
+                    triggerExplosion(playerPlane.x + playerPlane.width/2, playerPlane.y + playerPlane.height/2); playerPlane.isVisible = false; gameIsOver = true; 
+                    if (!isMuted) explosionSound.play(); setTimeout(showGameOverScreen, 1000);
                 }
             });
             ghosts = ghosts.filter(g => g.x + g.width > 0);
             for (let b = bullets.length - 1; b >= 0; b--) {
                 for (let g = ghosts.length - 1; g >= 0; g--) {
                     if (bullets[b].x < ghosts[g].x + ghosts[g].width && bullets[b].x + bullets[b].width > ghosts[g].x && bullets[b].y < ghosts[g].y + ghosts[g].height && bullets[b].y + bullets[b].height > ghosts[g].y) {
-                        if (!isMuted) ghostHitSound.play(); score += 50; levelScore += 50; bullets.splice(b, 1); ghosts.splice(g, 1); break;
+                        if (!isMuted) ghostHitSound.play(); 
+                        score += 20; levelScore += 20;
+                        bullets.splice(b, 1); ghosts.splice(g, 1); break;
                     }
                 }
             }
-        }
-        function updateFlying() {
-            updateFlyingAndLandingSharedLogic();
+
             if (Math.random() < 0.02) spawnGhost();
             if (levelScore >= FLYING_LEVEL_GOAL) {
-                gameState = 'landing'; ghosts = []; playerPlane.isLandingGearDown = true;
-                const landingColors = ['#FFFF00', '#7CFC00', '#00FFFF']; const randomColor = landingColors[Math.floor(Math.random() * landingColors.length)];
-                platforms.push({ x: 0, y: 450, width: CANVAS_WIDTH, height: 50, color: randomColor, isLandingPad: true });
+                const finalPlanePos = { x: playerPlane.x, y: playerPlane.y };
+                startNextLevel(); // This resets everything and sets gameState = 'platformer'
+                stickman.x = finalPlanePos.x;
+                stickman.y = finalPlanePos.y;
+                playerPlane.isVisible = false;
             }
         }
-        function updateLanding() {
-            updateFlyingAndLandingSharedLogic();
-            const landingPad = platforms[0];
-            if (landingPad && playerPlane.y + playerPlane.height >= landingPad.y && playerPlane.x > landingPad.x && playerPlane.x < landingPad.x + landingPad.width) {
-                gameState = 'platformer'; playerPlane.isVisible = false; playerPlane.isLandingGearDown = false;
-                stickman.x = playerPlane.x; stickman.y = landingPad.y - stickman.height; stickman.vy = 0; stickman.isJumping = false;
-                setControlsForState('platformer'); startNextLevel();
+        function updateTank() {
+            tank.x += tank.vx;
+            tank.wheelRotation += tank.vx * 0.1;
+            if (tank.x < 0) tank.x = 0; if (tank.x + tank.width > CANVAS_WIDTH) tank.x = CANVAS_WIDTH - tank.width;
+
+            if (ghosts.length > 0) {
+                ghostFormation.x += ghostFormation.vx;
+                if(ghostFormation.x < 0 || ghostFormation.x + ghostFormation.width > CANVAS_WIDTH) { ghostFormation.vx *= -1; ghostFormation.stepDown = true; }
+                
+                ghosts.forEach(g => {
+                    g.x += ghostFormation.vx; if(ghostFormation.stepDown) { g.y += ghostFormation.vy; }
+                    if(g.y + g.height >= tank.y) { triggerExplosion(tank.x + tank.width/2, tank.y); tank.isVisible = false; gameIsOver = true; if(!isMuted)explosionSound.play(); setTimeout(showGameOverScreen, 1000); }
+                });
+                if(ghostFormation.stepDown) ghostFormation.stepDown = false;
+            }
+
+            for (let b = bullets.length - 1; b >= 0; b--) {
+                const bullet = bullets[b];
+                bullet.y += bullet.vy;
+                if(bullet.y < -bullet.height) { bullets.splice(b, 1); continue; }
+                
+                for (let g = ghosts.length - 1; g >= 0; g--) {
+                    const ghost = ghosts[g];
+                    if (bullet.x > ghost.x && bullet.x < ghost.x + ghost.width && bullet.y > ghost.y && bullet.y < ghost.y + ghost.height) {
+                        ghost.health--;
+                        if (!isMuted) ghostHitSound.play();
+                        bullets.splice(b, 1);
+                        if (ghost.health <= 0) {
+                            score += 30; levelScore += 30;
+                            ghosts.splice(g, 1);
+                        } else {
+                            score += 20; levelScore += 20;
+                            ghost.color = '#0074d9';
+                        }
+                        break; 
+                    }
+                }
+                if (!bullets[b]) continue;
+                
+                if (ufo.isVisible && bullet.x > ufo.x && bullet.x < ufo.x + ufo.width && bullet.y > ufo.y && bullet.y < ufo.y + ufo.height) {
+                    score += 5; levelScore += 5;
+                    ufo.color = ufoHitColors[Math.floor(Math.random() * ufoHitColors.length)];
+                    bullets.splice(b, 1);
+                    if (!isMuted) ghostHitSound.play();
+                    break;
+                }
+            }
+
+            if (levelScore >= TANK_LEVEL_GHOST_GOAL && !ufo.isVisible && ghosts.length > 0) {
+                ghosts = []; 
+                ufo.isVisible = true; 
+            }
+
+            if (ufo.isVisible) {
+                ufo.x += ufo.vx; if(ufo.x < 0 || ufo.x + ufo.width > CANVAS_WIDTH) ufo.vx *= -1;
+                if (Math.random() < 0.025) spawnUfoBomb();
+
+                if (levelScore >= TANK_LEVEL_TOTAL_GOAL) {
+                    if (!isMuted) explosionSound.play();
+                    triggerExplosion(ufo.x + ufo.width/2, ufo.y + ufo.height/2);
+                    const finalTankPos = { x: tank.x, y: tank.y };
+                    ufo.isVisible = false; 
+                    tank.isVisible = false;
+                    setTimeout(() => {
+                        startNextLevel();
+                        stickman.x = finalTankPos.x + tank.width / 2;
+                        stickman.y = finalTankPos.y;
+                    }, 1500);
+                }
+            }
+
+             for (let i = ufoBombs.length - 1; i >= 0; i--) {
+                const bomb = ufoBombs[i];
+                bomb.y += bomb.vy;
+                if (bomb.y > CANVAS_HEIGHT) { ufoBombs.splice(i, 1); continue; }
+                if (tank.isVisible && bomb.x > tank.x && bomb.x < tank.x + tank.width && bomb.y + bomb.height > tank.y && bomb.y < tank.y + tank.height) {
+                    triggerExplosion(tank.x + tank.width / 2, tank.y); tank.isVisible = false; gameIsOver = true;
+                    if (!isMuted) explosionSound.play(); setTimeout(showGameOverScreen, 1000);
+                    ufoBombs.splice(i, 1); break;
+                }
             }
         }
         function updateBannerPlane(deltaTime) {
@@ -248,163 +275,203 @@
         }
         function updateExplosions(deltaTime) {
             for(let i = explosions.length - 1; i >= 0; i--) {
-                const p = explosions[i];
-                p.x += p.vx; p.y += p.vy; p.life -= deltaTime;
-                if(p.life <= 0) explosions.splice(i, 1);
+                const p = explosions[i]; p.x += p.vx; p.y += p.vy; p.life -= deltaTime; if(p.life <= 0) explosions.splice(i, 1);
             }
         }
 
+        function clearAllEntities() {
+            platforms = []; ghosts = []; bullets = []; ufoBombs = []; explosions = []; castle = null;
+        }
+
         function prepareTakeoffLevel() {
-            gameIsOver = false; gameState = 'takeoff'; currentLevel++; cameraX = 0; platforms = []; castle = null;
+            gameIsOver = false; currentLevel++; levelScore = 0; cameraX = 0;
+            clearAllEntities();
             const runway = { x: 0, y: 500, width: CANVAS_WIDTH, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor };
             platforms.push(runway);
-            stickman.x = 100; stickman.y = runway.y - stickman.height; stickman.vx = 0; stickman.vy = 0;
-            playerPlane.x = 300; playerPlane.y = runway.y - playerPlane.height; playerPlane.isVisible = true; playerPlane.isLandingGearDown = false;
+            stickman.x = 100; stickman.y = runway.y - stickman.height; stickman.vx = 0; stickman.vy = 0; stickman.isVisible = true;
+            playerPlane.x = 300; playerPlane.y = runway.y - playerPlane.height; playerPlane.isVisible = true;
+            gameState = 'takeoff';
             setControlsForState('platformer');
         }
+        function prepareTankLevel() {
+            gameIsOver = false; currentLevel++; levelScore = 0; cameraX = 0;
+            clearAllEntities();
+            
+            gameState = 'tank';
+            stickman.isVisible = false;
+
+            const ground = { x: 0, y: 500, width: CANVAS_WIDTH, height: PLATFORM_HEIGHT * 5, color: '#8B4513' };
+            platforms.push(ground);
+            
+            tank.x = 300; 
+            tank.y = ground.y - tank.height; 
+            tank.isVisible = true; 
+            ufo.isVisible = false;
+
+            createGhostFormation();
+            setControlsForState('tank');
+        }
         function startNextLevel() {
-            currentLevel++; platformingLevelStartScore = score;
+            currentLevel++; platformingLevelStartScore = score; stickman.isVisible = true;
+            gameState = 'platformer';
             let newColor; do { newColor = platformThemes[Math.floor(Math.random() * platformThemes.length)]; } while (newColor === currentPlatformColor);
             currentPlatformColor = newColor;
-            platforms = []; castle = null; cameraX = 0; farthestPlatformX = stickman.x + 200;
+            clearAllEntities();
+            cameraX = 0; farthestPlatformX = stickman.x + 200;
             const startPlatform = { x: stickman.x - 100, y: 500, width: 400, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor };
             platforms.push(startPlatform);
             while (farthestPlatformX < stickman.x + CANVAS_WIDTH * 1.5) generateNewPlatform();
+            setControlsForState('platformer');
         }
 
-        function shoot() { bullets.push({ x: playerPlane.x + playerPlane.width, y: playerPlane.y + playerPlane.height / 2 - 2.5, width: 15, height: 5, speed: 10 }); if (!isMuted) { shootSound.currentTime = 0; shootSound.play(); } }
+        function shoot() {
+            if (gameState === 'tank') {
+                if (ufo.isVisible) {
+                    bullets.push({ x: tank.x + tank.width / 2 - 10, y: tank.y - tank.barrelLength, vx: 0, vy: -4, width: 20, height: 40 });
+                } else if(ghosts.length > 0) {
+                    bullets.push({ x: tank.x + tank.width/2 - 4, y: tank.y - tank.barrelLength, vx: 0, vy: -10, width: 8, height: 8 });
+                }
+            } else {
+                bullets.push({ x: playerPlane.x + playerPlane.width, y: playerPlane.y + playerPlane.height / 2 - 2.5, vx: 10, vy: 0, width: 15, height: 5 });
+            }
+            if (!isMuted) { shootSound.currentTime = 0; shootSound.play(); }
+        }
         function spawnGhost() { ghosts.push({ x: CANVAS_WIDTH, y: Math.random() * (CANVAS_HEIGHT - 100), width: 39, height: 39, speed: 1 + Math.random() * 2, color: ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][Math.floor(Math.random() * 4)] }); }
+        function spawnUfoBomb() { if (!ufo.isVisible) return; ufoBombs.push({ x: ufo.x + ufo.width * Math.random(), y: ufo.y + ufo.height, width: 20, height: 20, vy: 4, color: '#FF4136' }); }
+        function createGhostFormation() {
+            ghosts = []; const rows = 4, cols = 8, spacing = 50;
+            ghostFormation.width = (cols - 1) * spacing;
+            for(let r = 0; r < rows; r++) {
+                for(let c = 0; c < cols; c++) {
+                    const color = ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][r % 4];
+                    ghosts.push({ x: ghostFormation.x + c * spacing, y: ghostFormation.y + r * spacing, width: 39, height: 39, speed: 1, color: color, health: 2 });
+                }
+            }
+        }
         function triggerExplosion(x, y) {
             for (let i = 0; i < 25; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 2 + Math.random() * 4;
+                const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 4;
                 explosions.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 600 + Math.random() * 400, color: ['red', 'orange', 'yellow'][Math.floor(Math.random()*3)] });
             }
         }
 
         function draw() {
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); drawClouds();
-            if (bannerPlane.isVisible) drawBannerPlane();
-            ctx.save(); if (gameState === 'platformer') ctx.translate(-cameraX, 0);
-            drawPlatforms(); if (castle) drawCastle();
-            if (playerPlane.isVisible) drawPlayerPlane();
-            if (gameState === 'platformer' || gameState === 'takeoff') drawStickman();
-            if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); }
-            ctx.restore(); drawHUD();
+            if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
+            
+            if (gameState === 'tank') {
+                drawPlatforms();
+                if (tank.isVisible) drawTank();
+                ghosts.forEach(drawGhost);
+                bullets.forEach(drawBullet);
+                if (ufo.isVisible) { drawUfo(); drawUfoBombs(); }
+            } else {
+                ctx.save(); if (gameState === 'platformer') ctx.translate(-cameraX, 0);
+                drawPlatforms();
+                if (castle) drawCastle();
+                if (playerPlane.isVisible) drawPlayerPlane();
+                if (stickman.isVisible) drawStickman();
+                if (gameState === 'flying') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); }
+                ctx.restore();
+            }
+            
+            drawHUD();
             drawExplosions();
         }
-        function drawPlayerPlane() {
-            ctx.save(); ctx.translate(playerPlane.x, playerPlane.y); ctx.strokeStyle = 'black'; ctx.lineWidth = 2;
-            ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, playerPlane.width, playerPlane.height); ctx.strokeRect(0, 0, playerPlane.width, playerPlane.height);
-            ctx.fillStyle = '#87CEEB'; ctx.fillRect(playerPlane.width - 25, 5, 20, 20); ctx.strokeRect(playerPlane.width - 25, 5, 20, 20);
-            ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, playerPlane.height + 30); ctx.strokeRect(20, -15, 20, playerPlane.height + 30);
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20, 0); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = 'black'; ctx.fillRect(playerPlane.width, 12, 15, 6);
-            if (playerPlane.isLandingGearDown) { ctx.fillStyle = '#444'; ctx.fillRect(30, playerPlane.height, 10, 15); ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(35, playerPlane.height + 20, 8, 0, Math.PI * 2); ctx.fill(); }
-            ctx.restore();
-        }
-        function drawGhost(ghost) {
-            const p = ghost.width / 13; ctx.fillStyle = ghost.color;
-            ctx.fillRect(ghost.x + p*3, ghost.y + 0, p*7, p); ctx.fillRect(ghost.x + p*2, ghost.y + p, p*9, p); ctx.fillRect(ghost.x + p, ghost.y + p*2, p*11, p*6); ctx.fillRect(ghost.x + 0, ghost.y + p*4, p*13, p*4);
-            ctx.fillRect(ghost.x + 0, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*2, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*4, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*6, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*8, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*10, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*12, ghost.y + p*8, p, p*3);
-            ctx.fillStyle = 'white'; ctx.fillRect(ghost.x + p*3, ghost.y + p*4, p*3, p*3); ctx.fillRect(ghost.x + p*7, ghost.y + p*4, p*3, p*3);
-            ctx.fillStyle = '#00f'; ctx.fillRect(ghost.x + p*4, ghost.y + p*5, p*2, p*2); ctx.fillRect(ghost.x + p*7, ghost.y + p*5, p*2, p*2);
-        }
-        function drawClouds() {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            clouds.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2); ctx.arc(c.x - c.radius * 0.6, c.y + 5, c.radius * 0.7, 0, Math.PI * 2); ctx.arc(c.x + c.radius * 0.7, c.y + 3, c.radius * 0.8, 0, Math.PI * 2); ctx.fill(); });
-        }
-        function drawBullet(b) { ctx.fillStyle = 'yellow'; ctx.fillRect(b.x, b.y, b.width, b.height); }
-        function drawPlatforms() {
-            platforms.forEach(p => {
-                ctx.fillStyle = p.color || platformThemes[0];
-                const originalStrokeStyle = ctx.strokeStyle; const originalLineWidth = ctx.lineWidth;
-                ctx.strokeStyle = p.isLandingPad && Math.floor(Date.now() / 250) % 2 === 0 ? '#FFFFFF' : '#2c3e50';
-                ctx.lineWidth = p.isLandingPad ? 4 : 2;
-                ctx.fillRect(p.x, p.y, p.width, p.height); ctx.strokeRect(p.x, p.y, p.width, p.height);
-                ctx.strokeStyle = originalStrokeStyle; ctx.lineWidth = originalLineWidth;
-            });
-        }
-        function drawExplosions() { explosions.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 5, 5); }); }
-        function spawnCastle() {
-            const castleX = farthestPlatformX + 200; const castleBaseY = MAX_Y_LEVEL; const castleWidth = 300 + Math.random() * 150; const mainKeepHeight = 150 + Math.random() * 100;
-            const leftTowerHeight = mainKeepHeight + 50 + Math.random() * 100, rightTowerHeight = mainKeepHeight + 50 + Math.random() * 100;
-            const leftTowerWidth = castleWidth * (0.25 + Math.random() * 0.1), rightTowerWidth = castleWidth * (0.25 + Math.random() * 0.1);
-            const keepX = castleX + leftTowerWidth, keepWidth = castleWidth - leftTowerWidth - rightTowerWidth; const gateWidth = keepWidth * 0.4, gateHeight = mainKeepHeight * 0.6;
-            castle = { x: castleX, y: castleBaseY, width: castleWidth, mainKeep: { h: mainKeepHeight }, leftTower: { x: castleX, y: castleBaseY - leftTowerHeight, w: leftTowerWidth, h: leftTowerHeight }, rightTower: { x: castleX + castleWidth - rightTowerWidth, y: castleBaseY - rightTowerHeight, w: rightTowerWidth, h: rightTowerHeight }, gate: { x: keepX + (keepWidth - gateWidth) / 2, y: castleBaseY - gateHeight, w: gateWidth, h: gateHeight } };
-            platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor }); farthestPlatformX = castle.x + castle.width;
-        }
-        function drawCastle() {
-            if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3;
-            const keepX = castle.leftTower.x + castle.leftTower.w, keepY = castle.y - castle.mainKeep.h, keepW = castle.rightTower.x - keepX;
-            ctx.fillRect(keepX, keepY, keepW, castle.mainKeep.h); ctx.strokeRect(keepX, keepY, keepW, castle.mainKeep.h);
-            ctx.fillRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h); ctx.strokeRect(castle.leftTower.x, castle.leftTower.y, castle.leftTower.w, castle.leftTower.h);
-            ctx.fillRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h); ctx.strokeRect(castle.rightTower.x, castle.rightTower.y, castle.rightTower.w, castle.rightTower.h);
-            ctx.fillStyle = '#6B4226'; ctx.fillRect(castle.gate.x, castle.gate.y, castle.gate.w, castle.gate.h);
-        }
-        function drawBannerPlane() {
-            ctx.save(); ctx.translate(bannerPlane.x, bannerPlane.y); ctx.fillStyle = '#F5F5DC'; ctx.strokeStyle = 'black'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(-10, 15); ctx.lineTo(-280, 5); ctx.lineTo(-290, 45); ctx.lineTo(-20, 55); ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = 'black'; ctx.font = '14px "Press Start 2P"'; ctx.textAlign = 'center'; ctx.fillText(bannerPlane.bannerText, -150, 38);
-            ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, bannerPlane.width, bannerPlane.height); ctx.strokeRect(0, 0, bannerPlane.width, bannerPlane.height);
-            ctx.fillStyle = '#87CEEB'; ctx.fillRect(bannerPlane.width - 25, 5, 20, 20); ctx.strokeRect(bannerPlane.width - 25, 5, 20, 20);
-            ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, bannerPlane.height + 30); ctx.strokeRect(20, -15, 20, bannerPlane.height + 30);
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20, 0); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = 'black'; ctx.fillRect(playerPlane.width, 12, 15, 6);
-            ctx.restore();
-        }
+        function drawTank() {
+            ctx.save();
+            ctx.translate(tank.x, tank.y);
+            
+            const bodyGrad = ctx.createLinearGradient(0, 0, 0, tank.height);
+            bodyGrad.addColorStop(0, '#4a00e0'); bodyGrad.addColorStop(1, '#8e2de2');
+            ctx.fillStyle = bodyGrad;
+            ctx.beginPath();
+            ctx.moveTo(0, tank.height); ctx.lineTo(10, 10); ctx.lineTo(tank.width - 10, 10); ctx.lineTo(tank.width, tank.height); ctx.closePath(); ctx.fill();
 
+            ctx.fillStyle = 'rgba(173, 216, 230, 0.5)'; ctx.strokeStyle = '#ADD8E6'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(tank.width / 2, 10, tank.width / 3, Math.PI, 2 * Math.PI); ctx.fill(); ctx.stroke();
+
+            const barrelX = tank.width / 2;
+            ctx.fillStyle = '#6c7a89';
+            ctx.fillRect(barrelX - 5, -tank.barrelLength, 10, tank.barrelLength);
+            
+            const wheelRadius = 20; const wheelPositions = [tank.width * 0.2, tank.width * 0.8];
+            wheelPositions.forEach(posX => {
+                ctx.save();
+                ctx.translate(posX, tank.height); ctx.rotate(tank.wheelRotation);
+                ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#8e2de2'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius * 0.6, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#4a00e0'; ctx.lineWidth = 3;
+                for(let i = 0; i < 3; i++){
+                    ctx.rotate(Math.PI * 2 / 3);
+                    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, -wheelRadius * 0.9); ctx.stroke();
+                }
+                ctx.restore();
+            });
+            ctx.restore();
+        }
+        function drawUfo() {
+             if(!ufo.isVisible) return; 
+             ctx.save(); ctx.translate(ufo.x, ufo.y);
+            const gradient = ctx.createRadialGradient(ufo.width / 2, ufo.height / 2, 5, ufo.width / 2, ufo.height / 2, ufo.width / 2);
+            gradient.addColorStop(0, '#E0E0E0'); gradient.addColorStop(1, ufo.color);
+            ctx.fillStyle = gradient; ctx.strokeStyle = '#424242'; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.ellipse(ufo.width / 2, ufo.height / 2, ufo.width / 2, ufo.height / 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = 'rgba(173, 216, 230, 0.7)'; ctx.strokeStyle = '#87CEEB'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(ufo.width / 2, ufo.height / 2, ufo.width / 4, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+            const lightOn = Math.floor(Date.now() / 500) % 2 === 0;
+            ctx.fillStyle = lightOn ? '#FF4136' : '#85144b'; ctx.fillRect(ufo.width * 0.2, ufo.height * 0.65, 10, 5);
+            ctx.fillStyle = lightOn ? '#0074D9' : '#001f3f'; ctx.fillRect(ufo.width * 0.5 - 5, ufo.height * 0.7, 10, 5);
+            ctx.fillStyle = lightOn ? '#2ECC40' : '#018d19'; ctx.fillRect(ufo.width * 0.8 - 10, ufo.height * 0.65, 10, 5);
+            ctx.restore();
+        }
+        function drawPlayerPlane() { ctx.save(); ctx.translate(playerPlane.x, playerPlane.y); ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, playerPlane.width, playerPlane.height); ctx.strokeRect(0, 0, playerPlane.width, playerPlane.height); ctx.fillStyle = '#87CEEB'; ctx.fillRect(playerPlane.width - 25, 5, 20, 20); ctx.strokeRect(playerPlane.width - 25, 5, 20, 20); ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, playerPlane.height + 30); ctx.strokeRect(20, -15, 20, playerPlane.height + 30); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20, 0); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'black'; ctx.fillRect(playerPlane.width, 12, 15, 6); }
+        function drawGhost(ghost) { const p = ghost.width / 13; ctx.fillStyle = ghost.color; ctx.fillRect(ghost.x + p*3, ghost.y + 0, p*7, p); ctx.fillRect(ghost.x + p*2, ghost.y + p, p*9, p); ctx.fillRect(ghost.x + p, ghost.y + p*2, p*11, p*6); ctx.fillRect(ghost.x + 0, ghost.y + p*4, p*13, p*4); ctx.fillRect(ghost.x + 0, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*2, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*4, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*6, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*8, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*10, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*12, ghost.y + p*8, p, p*3); ctx.fillStyle = 'white'; ctx.fillRect(ghost.x + p*3, ghost.y + p*4, p*3, p*3); ctx.fillRect(ghost.x + p*7, ghost.y + p*4, p*3, p*3); ctx.fillStyle = (ghost.health < 2 && gameState === 'tank') ? 'white' : '#00f'; ctx.fillRect(ghost.x + p*4, ghost.y + p*5, p*2, p*2); ctx.fillRect(ghost.x + p*7, ghost.y + p*5, p*2, p*2); }
+        function drawClouds() { ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; clouds.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2); ctx.arc(c.x - c.radius * 0.6, c.y + 5, c.radius * 0.7, 0, Math.PI * 2); ctx.arc(c.x + c.radius * 0.7, c.y + 3, c.radius * 0.8, 0, Math.PI * 2); ctx.fill(); }); }
+        function drawBullet(b) { ctx.fillStyle = (b.width > 10) ? '#ffcc00' : 'yellow'; ctx.fillRect(b.x, b.y, b.width, b.height); }
+        function drawUfoBombs() { ufoBombs.forEach(b => { ctx.fillStyle = b.color; ctx.beginPath(); ctx.arc(b.x, b.y, b.width / 2, 0, Math.PI * 2); ctx.fill(); }); }
+        function drawPlatforms() { platforms.forEach(p => { ctx.fillStyle = p.color || platformThemes[0]; const oS = ctx.strokeStyle, oLW = ctx.lineWidth; ctx.strokeStyle = p.isLandingPad && Math.floor(Date.now() / 250) % 2 === 0 ? '#FFFFFF' : '#2c3e50'; ctx.lineWidth = p.isLandingPad ? 4 : 2; ctx.fillRect(p.x, p.y, p.width, p.height); ctx.strokeRect(p.x, p.y, p.width, p.height); ctx.strokeStyle = oS; ctx.lineWidth = oLW; }); }
+        function drawExplosions() { explosions.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 5, 5); }); }
+        function spawnCastle() { const cX = farthestPlatformX + 200, cBY = MAX_Y_LEVEL, cW = 300 + Math.random() * 150, mKH = 150 + Math.random() * 100, lTH = mKH + 50 + Math.random() * 100, rTH = mKH + 50 + Math.random() * 100, lTW = cW * (0.25+Math.random()*0.1), rTW = cW * (0.25+Math.random()*0.1), kX = cX + lTW, kW = cW - lTW - rTW, gW = kW * 0.4, gH = mKH * 0.6; castle = { x: cX, y: cBY, width: cW, mainKeep: { h: mKH }, leftTower: { x: cX, y: cBY - lTH, w: lTW, h: lTH }, rightTower: { x: cX + cW - rTW, y: cBY - rTH, w: rTW, h: rTH }, gate: { x: kX + (kW-gW)/2, y: cBY - gH, w: gW, h: gH } }; platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor }); farthestPlatformX = castle.x + castle.width; }
+        function drawCastle() { if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; const kX=castle.leftTower.x+castle.leftTower.w, kY=castle.y-castle.mainKeep.h, kW=castle.rightTower.x-kX; ctx.fillRect(kX,kY,kW,castle.mainKeep.h); ctx.strokeRect(kX,kY,kW,castle.mainKeep.h); ctx.fillRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.strokeRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.fillRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.strokeRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.fillStyle='#6B4226'; ctx.fillRect(castle.gate.x,castle.gate.y,castle.gate.w,castle.gate.h); }
+        function drawBannerPlane() { ctx.save(); ctx.translate(bannerPlane.x, bannerPlane.y); ctx.fillStyle='#F5F5DC'; ctx.strokeStyle='black'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.font='14px "Press Start 2P"'; ctx.textAlign='center'; ctx.fillText(bannerPlane.bannerText,-150,38); ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); ctx.restore(); }
+        
         const keys = {};
         function handleInput() {
             if (gameIsOver) return;
-            if (gameState === 'platformer' || gameState === 'takeoff') { if (keys.left) stickman.vx = -stickman.MOVE_SPEED; else if (keys.right) stickman.vx = stickman.MOVE_SPEED; else stickman.vx = 0; } 
-            else if (gameState === 'flying' || gameState === 'landing') {
-                if (keys.left) playerPlane.vx = -playerPlane.speed; else if (keys.right) playerPlane.vx = playerPlane.speed; else playerPlane.vx = 0;
-                if (keys.up) playerPlane.vy = -playerPlane.speed; else if (keys.down) playerPlane.vy = playerPlane.speed; else playerPlane.vy = 0;
-            }
+            if (gameState === 'platformer' || gameState === 'takeoff') { if (keys.left) stickman.vx = -stickman.MOVE_SPEED; else if (keys.right) stickman.vx = stickman.MOVE_SPEED; else stickman.vx = 0; }
+            else if (gameState === 'flying') { if (keys.left) playerPlane.vx = -playerPlane.speed; else if (keys.right) playerPlane.vx = playerPlane.speed; else playerPlane.vx = 0; if (keys.up) playerPlane.vy = -playerPlane.speed; else if (keys.down) playerPlane.vy = playerPlane.speed; else playerPlane.vy = 0; }
+            else if (gameState === 'tank') { if (keys.left) tank.vx = -tank.speed; else if (keys.right) tank.vx = tank.speed; else tank.vx = 0; }
         }
-        window.addEventListener('keydown', (e) => {
-            startMusicIfNeeded();
-            if (gameIsOver) { if (e.key === 'Enter') saveScoreButton.click(); return; }
-            keys[e.key.toLowerCase().replace('arrow','')] = true;
-            if (e.key === ' ') { e.preventDefault();
-                if ((gameState === 'platformer' || gameState === 'takeoff') && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isMuted) { jumpSound.currentTime = 0; jumpSound.play(); } } 
-                else if (gameState === 'flying' || gameState === 'landing') shoot();
-            }
-        });
+        window.addEventListener('keydown', (e) => { startMusicIfNeeded(); if (gameIsOver) { if (e.key === 'Enter') saveScoreButton.click(); return; } keys[e.key.toLowerCase().replace('arrow','')] = true; if (e.key === ' ') { e.preventDefault(); handleInputForJump(); } });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase().replace('arrow','')] = false; });
-        function buttonPress(id, isPressed) { startMusicIfNeeded(); let keyName = id.replace('Button',''); if (keyName === 'jump') { if(isPressed) handleInputForJump(); return; } keys[keyName] = isPressed; }
-        function handleInputForJump() { if ((gameState === 'platformer' || gameState === 'takeoff') && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isMuted) { jumpSound.currentTime = 0; jumpSound.play(); } } else if (gameState === 'flying' || gameState === 'landing') shoot(); }
+        function buttonPress(id, isPressed) { startMusicIfNeeded(); let keyName = id.replace('Button',''); if (keyName === 'jump') { if(isPressed) handleInputForJump(); return; } if (gameState === 'tank' && (keyName === 'up' || keyName === 'down')) return; keys[keyName] = isPressed; }
+        function handleInputForJump() { if ((gameState === 'platformer' || gameState === 'takeoff') && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isMuted) { jumpSound.currentTime = 0; jumpSound.play(); } } else if (gameState === 'flying' || gameState === 'tank') shoot(); }
         ['touchstart', 'mousedown'].forEach(evt => { ['leftButton', 'rightButton', 'jumpButton', 'upButton', 'downButton'].forEach(id => { document.getElementById(id).addEventListener(evt, (e) => { e.preventDefault(); buttonPress(id, true); }); }); });
         ['touchend', 'mouseup', 'mouseleave', 'touchcancel'].forEach(evt => { ['leftButton', 'rightButton', 'jumpButton', 'upButton', 'downButton'].forEach(id => { document.getElementById(id).addEventListener(evt, (e) => { e.preventDefault(); buttonPress(id, false); }); }); });
 
         function resetGame() {
-            gameIsOver = false; isMusicStarted = false; loadHighScores(); gameOverScreen.style.display = 'none'; currentLevel = 1; score = 0; cameraX = 0; castle = null; gameState = 'platformer'; playerPlane.isVisible = false;
-            platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0];
-            bannerPlane.timer = 25000; bannerPlane.isVisible = false;
+            gameIsOver = false; isMusicStarted = false; loadHighScores(); gameOverScreen.style.display = 'none'; currentLevel = 1; score = 0; cameraX = 0;
+            gameState = 'platformer'; 
+            playerPlane.isVisible = false; tank.isVisible = false; ufo.isVisible = false; stickman.isVisible = true;
+            platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0]; bannerPlane.timer = 25000; bannerPlane.isVisible = false;
             stickman.x = 150; stickman.y = 400; stickman.vx = 0; stickman.vy = 0; stickman.isJumping = false;
-            platforms = []; clouds = []; const startPlatform = { x: 0, y: 500, width: 400, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor };
+            clearAllEntities();
+            const startPlatform = { x: 0, y: 500, width: 400, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor };
             platforms.push(startPlatform); farthestPlatformX = startPlatform.width;
             for (let i = 0; i < 7; i++) spawnCloud(true); while (farthestPlatformX < CANVAS_WIDTH * 1.5) generateNewPlatform();
             setControlsForState('platformer');
         }
         let lastTime = 0;
-        function gameLoop(timestamp) { const deltaTime = timestamp - lastTime; lastTime = timestamp; handleInput(); update(deltaTime); draw(); requestAnimationFrame(gameLoop); }
+        function gameLoop(timestamp) { const deltaTime = timestamp - lastTime || 0; lastTime = timestamp; handleInput(); update(deltaTime); draw(); requestAnimationFrame(gameLoop); }
         function loadHighScores(){ const s = localStorage.getItem(HIGH_SCORES_KEY); highScores = s ? JSON.parse(s) : []; if(highScores.length>0){bannerPlane.bannerText=`LEADER:${highScores[0].name}-${highScores[0].score}`}else{bannerPlane.bannerText="BE THE #1 PLAYER!"} }
         function saveHighScore(){ const name = (playerNameInput.value.trim()||'AAA').toUpperCase(); highScores.push({name,score}); highScores.sort((a,b)=>b.score-a.score).splice(10); localStorage.setItem(HIGH_SCORES_KEY, JSON.stringify(highScores)); }
         function showGameOverScreen(){ bgMusic.pause(); gameOverSound.play(); finalScoreEl.innerText = score; loadHighScores(); const low = highScores.length<10?0:highScores[highScores.length-1].score; if(score>0 && score>low){newHighScoreDiv.style.display='block';saveScoreButton.innerText='SAVE & RESTART';}else{newHighScoreDiv.style.display='none';saveScoreButton.innerText='PLAY AGAIN';} highScoreList.innerHTML = highScores.map((s,i)=>`<li><span>${i+1}. ${s.name}</span><span>${s.score}</span></li>`).join(''); gameOverScreen.style.display='flex'; }
         saveScoreButton.addEventListener('click', () => { if(score>0&&(highScores.length<10||score>highScores[highScores.length-1].score))saveHighScore(); resetGame(); });
         function spawnCloud(isInitial = false) { clouds.push({ x: isInitial ? Math.random() * CANVAS_WIDTH : CANVAS_WIDTH + 100, y: 50 + Math.random() * 200, radius: 30 + Math.random() * 30, speed: 0.2 + Math.random() * 0.6 }); }
-        function generateNewPlatform() {
-            const w = MIN_PLATFORM_WIDTH + Math.random() * (MAX_PLATFORM_WIDTH - MIN_PLATFORM_WIDTH);
-            const g = MIN_GAP_X + Math.random() * (MAX_GAP_X - MIN_GAP_X);
-            const x = farthestPlatformX + g;
-            const y = MIN_Y_LEVEL + Math.random() * (MAX_Y_LEVEL - MIN_Y_LEVEL);
-            platforms.push({x, y, width:w, height:PLATFORM_HEIGHT, color: currentPlatformColor});
-            farthestPlatformX = x + w;
-        }
-        function drawStickman() { ctx.strokeStyle='black';ctx.lineWidth=3;const cx=stickman.x+stickman.width/2,hy=stickman.y,bty=hy+10,bby=hy+35,ay=bty+5;ctx.beginPath();ctx.arc(cx,hy,10,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,bty);ctx.lineTo(cx,bby);ctx.stroke();let la=0.5,aa=0.5;if(stickman.isJumping){la=0.8;aa=1.2;}else if(stickman.vx!==0){const fp=(Date.now()/100)%Math.PI*2;la=Math.sin(fp)*0.8;aa=Math.sin(fp)*-0.8;}ctx.beginPath();ctx.moveTo(cx,bby);ctx.lineTo(cx-15*Math.sin(la),bby+15*Math.cos(la));ctx.stroke();ctx.beginPath();ctx.moveTo(cx,bby);ctx.lineTo(cx+15*Math.sin(la),bby+15*Math.cos(la));ctx.stroke();ctx.beginPath();ctx.moveTo(cx,ay);ctx.lineTo(cx-15*Math.sin(aa),ay+15*Math.cos(aa));ctx.stroke();ctx.beginPath();ctx.moveTo(cx,ay);ctx.lineTo(cx+15*Math.sin(aa),ay+15*Math.cos(aa));ctx.stroke(); }
-        function drawHUD() { ctx.fillStyle='white'; ctx.font='20px "Press Start 2P"'; ctx.textAlign='left'; ctx.fillText(`Score:${score}`, 10, 30); ctx.textAlign='right'; ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH-10, 30); if(gameState==='flying') {ctx.fillText(`Target:${levelScore}/${FLYING_LEVEL_GOAL}`, CANVAS_WIDTH-10, 60);} else if (gameState === 'platformer' && currentLevel > 1) {ctx.fillText(`Castle:${platformingLevelStartScore + PLATFORMING_GOAL}`, CANVAS_WIDTH-10, 60)} }
+        function generateNewPlatform() { const w = MIN_PLATFORM_WIDTH + Math.random() * (MAX_PLATFORM_WIDTH - MIN_PLATFORM_WIDTH); const g = MIN_GAP_X + Math.random() * (MAX_GAP_X - MIN_GAP_X); const x = farthestPlatformX + g; const y = MIN_Y_LEVEL + Math.random() * (MAX_Y_LEVEL - MIN_Y_LEVEL); platforms.push({x, y, width:w, height:PLATFORM_HEIGHT, color: currentPlatformColor}); farthestPlatformX = x + w; }
+        function drawStickman() { if(!stickman.isVisible) return; ctx.strokeStyle='black';ctx.lineWidth=3;const cx=stickman.x+stickman.width/2,hy=stickman.y,bty=hy+10,bby=hy+35,ay=bty+5;ctx.beginPath();ctx.arc(cx,hy,10,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(cx,bty);ctx.lineTo(cx,bby);ctx.stroke();let la=0.5,aa=0.5;if(stickman.isJumping){la=0.8;aa=1.2;}else if(stickman.vx!==0){const fp=(Date.now()/100)%Math.PI*2;la=Math.sin(fp)*0.8;aa=Math.sin(fp)*-0.8;}ctx.beginPath();ctx.moveTo(cx,bby);ctx.lineTo(cx-15*Math.sin(la),bby+15*Math.cos(la));ctx.stroke();ctx.beginPath();ctx.moveTo(cx,bby);ctx.lineTo(cx+15*Math.sin(la),bby+15*Math.cos(la));ctx.stroke();ctx.beginPath();ctx.moveTo(cx,ay);ctx.lineTo(cx-15*Math.sin(aa),ay+15*Math.cos(aa));ctx.stroke();ctx.beginPath();ctx.moveTo(cx,ay);ctx.lineTo(cx+15*Math.sin(aa),ay+15*Math.cos(aa));ctx.stroke(); }
+        function drawHUD() { ctx.fillStyle='white'; ctx.font='20px "Press Start 2P"'; ctx.textAlign='left'; ctx.fillText(`Score:${score}`, 10, 30); ctx.textAlign='right'; ctx.fillText(`Level:${currentLevel}`, CANVAS_WIDTH-10, 30); if(gameState==='flying') {ctx.fillText(`Target:${levelScore}/${FLYING_LEVEL_GOAL}`, CANVAS_WIDTH-10, 60);} else if (gameState === 'platformer') {ctx.fillText(`Castle:${platformingLevelStartScore + PLATFORMING_GOAL}`, CANVAS_WIDTH-10, 60)} else if (gameState === 'tank') { if(ufo.isVisible){ctx.fillText(`Target:${levelScore}/${TANK_LEVEL_TOTAL_GOAL}`, CANVAS_WIDTH-10, 60)} else {ctx.fillText(`Destroy:${levelScore}/${TANK_LEVEL_GHOST_GOAL}`, CANVAS_WIDTH-10, 60)} } }
         
         resetGame();
         gameLoop(0);
