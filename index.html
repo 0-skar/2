@@ -6,7 +6,6 @@
     <title>Endless Stickman Platformer</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* (Wszystkie style CSS pozostają bez zmian) */
         html, body {
             width: 100%;
             height: 100%;
@@ -18,6 +17,7 @@
             color: white;
             text-shadow: 2px 2px #000000;
         }
+
         #gameContainer {
             position: fixed;
             top: 0;
@@ -28,6 +28,7 @@
             justify-content: center;
             align-items: center;
         }
+
         #gameCanvas {
             border: 2px solid black;
             background-color: #87CEEB;
@@ -35,6 +36,7 @@
             max-height: 100vh;
             object-fit: contain;
         }
+        
         #controls {
             display: flex;
             justify-content: space-between;
@@ -48,19 +50,69 @@
             z-index: 10;
             pointer-events: none;
         }
+
         @media (min-width: 801px) { #controls { display: none !important; } }
         #action-button-container, #d-pad-container { pointer-events: auto; }
-        #d-pad { position: relative; width: 150px; height: 150px; }
-        .d-pad-button { background-color: rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; position: absolute; width: 70px; height: 70px; margin: 0; }
-        .d-pad-button::before { content: ''; width: 0; height: 0; border-style: solid; border-width: 0 12px 20px 12px; border-color: transparent transparent white transparent; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -60%); }
+        
+        #d-pad {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+        
+        .d-pad-button {
+            background-color: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.7);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            margin: 0;
+        }
+
+        .d-pad-button::before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 12px 20px 12px;
+            border-color: transparent transparent white transparent;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -60%);
+        }
+        
         #rightButton::before { transform: translate(-50%, -50%) rotate(90deg); }
         #downButton::before { transform: translate(-50%, -40%) rotate(180deg); }
         #leftButton::before { transform: translate(-50%, -50%) rotate(-90deg); }
-        #jumpButton { background-color: rgba(255, 20, 20, 0.4); border: 2px solid rgba(255,255,255,0.7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; width: 80px; height: 80px; font-size: 1em; font-family: 'Press Start 2P', sans-serif; text-align: center; }
+
+        #jumpButton {
+            background-color: rgba(255, 20, 20, 0.4);
+            border: 2px solid rgba(255,255,255,0.7);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            width: 80px;
+            height: 80px;
+            font-size: 1em;
+            font-family: 'Press Start 2P', sans-serif;
+            text-align: center;
+        }
+        
         #upButton { top: 0; left: 50%; transform: translateX(-50%); }
         #leftButton { top: 50%; left: 0; transform: translateY(-50%); }
         #rightButton { top: 50%; right: 0; transform: translateY(-50%); }
         #downButton { bottom: 0; left: 50%; transform: translateX(-50%); }
+
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 20; }
         #gameOverScreen h1 { font-size: 3em; margin-bottom: 20px; color: #ff4136; } #gameOverScreen h2 { font-size: 1.5em; margin-bottom: 30px; }
         #newHighScore { margin-bottom: 20px; }
@@ -99,7 +151,6 @@
                 </div>
             </div>
         </div>
-
     </div>
     
     <!-- AUDIO -->
@@ -128,14 +179,14 @@
         const explosionSound = document.getElementById('explosionSound');
         const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
 
-        // --- ZMIANA: ADRES URL DO TWOJEGO NOWEGO BACKENDU ---
-        const LEADERBOARD_API_URL = "https://huggingface.co/spaces/Eosforus/stickman-leaderboard"; // <-- WAŻNE: Wstaw tutaj swój adres URL!
+        const LEADERBOARD_API_URL = "https://eosforus-stickman-leaderboard.hf.space";
 
         const CANVAS_WIDTH = canvas.width, CANVAS_HEIGHT = canvas.height;
         const PLATFORM_HEIGHT = 20;
         const MIN_PLATFORM_WIDTH = 100, MAX_PLATFORM_WIDTH = 250;
         const MIN_GAP_X = 80, MAX_GAP_X = 180;
         const MIN_Y_LEVEL = 350, MAX_Y_LEVEL = 550;
+        const MAX_HIGH_SCORES = 10;
         
         const platformThemes = [ '#6B4226', '#78909C', '#B71C1C', '#1B5E20', '#4A148C', '#FF6F00' ];
         let currentPlatformColor = platformThemes[0];
@@ -156,11 +207,10 @@
         let gameIsOver = false, currentLevel = 1, isMusicStarted = false, isMuted = false;
         let highScores = [];
 
-        // --- ZMIANA: Usunięto HIGH_SCORES_KEY, ponieważ nie używamy już localStorage ---
-
         function startMusicIfNeeded() { if (!isMusicStarted && !isMuted) bgMusic.play().catch(e => {}); }
         muteButton.addEventListener('click', () => { isMuted = !isMuted; [bgMusic, gameOverSound, jumpSound, shootSound, ghostHitSound, explosionSound].forEach(s => s.muted = isMuted); muteButton.innerText = isMuted ? '🔇' : '🔊'; if (!isMuted && !isMusicStarted) startMusicIfNeeded(); });
         closeLeaderboardButton.addEventListener('click', () => { resetGame(); });
+
         function setControlsForState(state) {
             const up = document.getElementById('upButton'), down = document.getElementById('downButton'), jump = document.getElementById('jumpButton'), left = document.getElementById('leftButton'), right = document.getElementById('rightButton');
             if (state === 'flying' || state === 'landing') { jump.innerText = 'Shoot'; up.style.visibility = 'visible'; down.style.visibility = 'visible'; left.style.visibility = 'visible'; right.style.visibility = 'visible';} 
@@ -185,14 +235,9 @@
             platforms = platforms.filter(p => p.x + p.width > cameraX); if (!castle && farthestPlatformX < cameraX + CANVAS_WIDTH * 1.5) generateNewPlatform();
             if (score >= platformingLevelStartScore + PLATFORMING_GOAL && !castle) spawnCastle();
             if (stickman.y > CANVAS_HEIGHT + 100) { gameIsOver = true; showGameOverScreen(); }
-            
             if (castle && stickman.x > castle.gate.x && stickman.x < castle.gate.x + castle.gate.w) {
                 const nextLevelType = (currentLevel) % 4;
-                if (nextLevelType === 1) { 
-                    setTimeout(prepareTakeoffLevel, 200);
-                } else if (nextLevelType === 3) {
-                    setTimeout(prepareTankLevel, 200);
-                }
+                if (nextLevelType === 1) { setTimeout(prepareTakeoffLevel, 200); } else if (nextLevelType === 3) { setTimeout(prepareTankLevel, 200); }
                 castle = null; 
             }
         }
@@ -201,8 +246,7 @@
             const runway = platforms[0]; if (stickman.y + stickman.height > runway.y) { stickman.y = runway.y - stickman.height; stickman.vy = 0; stickman.isJumping = false; }
             if (stickman.x < 0) stickman.x = 0; if (stickman.x + stickman.width > CANVAS_WIDTH) stickman.x = CANVAS_WIDTH - stickman.width;
             if (stickman.x < playerPlane.x + playerPlane.width && stickman.x + stickman.width > playerPlane.x && stickman.y < playerPlane.y + playerPlane.height && stickman.y + stickman.height > playerPlane.y) {
-                stickman.isVisible = false; levelScore = 0;
-                gameState = 'flying'; playerPlane.vx = playerPlane.speed; setControlsForState('flying');
+                stickman.isVisible = false; levelScore = 0; gameState = 'flying'; playerPlane.vx = playerPlane.speed; setControlsForState('flying');
             }
         }
         function updateFlyingAndLandingSharedLogic() {
@@ -372,43 +416,8 @@
             if (gameState === 'tank') { drawPlatforms(); if (tank.isVisible) drawTank(); ghosts.forEach(drawGhost); bullets.forEach(drawBullet); if (ufo.isVisible) { drawUfo(); drawUfoBombs(); } } else { ctx.save(); if (gameState === 'platformer') ctx.translate(-cameraX, 0); drawPlatforms(); if (castle) drawCastle(); if (playerPlane.isVisible) drawPlayerPlane(); if (stickman.isVisible) drawStickman(); if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); } ctx.restore(); }
             drawHUD(); drawExplosions();
         }
-        function drawTank() {
-            ctx.save(); ctx.translate(tank.x, tank.y);
-            const bodyGrad = ctx.createLinearGradient(0, 0, 0, tank.height);
-            bodyGrad.addColorStop(0, '#4a00e0'); bodyGrad.addColorStop(1, '#8e2de2');
-            ctx.fillStyle = bodyGrad;
-            ctx.beginPath(); ctx.moveTo(0, tank.height); ctx.lineTo(10, 10); ctx.lineTo(tank.width - 10, 10); ctx.lineTo(tank.width, tank.height); ctx.closePath(); ctx.fill();
-            ctx.fillStyle = 'rgba(173, 216, 230, 0.5)'; ctx.strokeStyle = '#ADD8E6'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.arc(tank.width / 2, 10, tank.width / 3, Math.PI, 2 * Math.PI); ctx.fill(); ctx.stroke();
-            const barrelX = tank.width / 2;
-            ctx.fillStyle = '#6c7a89'; ctx.fillRect(barrelX - 5, -tank.barrelLength, 10, tank.barrelLength);
-            const wheelRadius = 20; const wheelPositions = [tank.width * 0.2, tank.width * 0.8];
-            wheelPositions.forEach(posX => {
-                ctx.save();
-                ctx.translate(posX, tank.height); ctx.rotate(tank.wheelRotation);
-                ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#8e2de2'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius * 0.6, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#4a00e0'; ctx.lineWidth = 3;
-                for(let i = 0; i < 3; i++){ ctx.rotate(Math.PI * 2 / 3); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, -wheelRadius * 0.9); ctx.stroke(); }
-                ctx.restore();
-            });
-            ctx.restore();
-        }
-        function drawUfo() {
-             if(!ufo.isVisible) return; 
-             ctx.save(); ctx.translate(ufo.x, ufo.y);
-            const gradient = ctx.createRadialGradient(ufo.width / 2, ufo.height / 2, 5, ufo.width / 2, ufo.height / 2, ufo.width / 2);
-            gradient.addColorStop(0, '#E0E0E0'); gradient.addColorStop(1, ufo.color);
-            ctx.fillStyle = gradient; ctx.strokeStyle = '#424242'; ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.ellipse(ufo.width / 2, ufo.height / 2, ufo.width / 2, ufo.height / 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-            ctx.fillStyle = 'rgba(173, 216, 230, 0.7)'; ctx.strokeStyle = '#87CEEB'; ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.arc(ufo.width / 2, ufo.height / 2, ufo.width / 4, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
-            const lightOn = Math.floor(Date.now() / 500) % 2 === 0;
-            ctx.fillStyle = lightOn ? '#FF4136' : '#85144b'; ctx.fillRect(ufo.width * 0.2, ufo.height * 0.65, 10, 5);
-            ctx.fillStyle = lightOn ? '#0074D9' : '#001f3f'; ctx.fillRect(ufo.width * 0.5 - 5, ufo.height * 0.7, 10, 5);
-            ctx.fillStyle = lightOn ? '#2ECC40' : '#018d19'; ctx.fillRect(ufo.width * 0.8 - 10, ufo.height * 0.65, 10, 5);
-            ctx.restore();
-        }
+        function drawTank() { ctx.save(); ctx.translate(tank.x, tank.y); const bodyGrad = ctx.createLinearGradient(0, 0, 0, tank.height); bodyGrad.addColorStop(0, '#4a00e0'); bodyGrad.addColorStop(1, '#8e2de2'); ctx.fillStyle = bodyGrad; ctx.beginPath(); ctx.moveTo(0, tank.height); ctx.lineTo(10, 10); ctx.lineTo(tank.width - 10, 10); ctx.lineTo(tank.width, tank.height); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(173, 216, 230, 0.5)'; ctx.strokeStyle = '#ADD8E6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tank.width / 2, 10, tank.width / 3, Math.PI, 2 * Math.PI); ctx.fill(); ctx.stroke(); const barrelX = tank.width / 2; ctx.fillStyle = '#6c7a89'; ctx.fillRect(barrelX - 5, -tank.barrelLength, 10, tank.barrelLength); const wheelRadius = 20; const wheelPositions = [tank.width * 0.2, tank.width * 0.8]; wheelPositions.forEach(posX => { ctx.save(); ctx.translate(posX, tank.height); ctx.rotate(tank.wheelRotation); ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#8e2de2'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#4a00e0'; ctx.lineWidth = 3; for(let i = 0; i < 3; i++){ ctx.rotate(Math.PI * 2 / 3); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, -wheelRadius * 0.9); ctx.stroke(); } ctx.restore(); }); ctx.restore(); }
+        function drawUfo() { if(!ufo.isVisible) return; ctx.save(); ctx.translate(ufo.x, ufo.y); const gradient = ctx.createRadialGradient(ufo.width / 2, ufo.height / 2, 5, ufo.width / 2, ufo.height / 2, ufo.width / 2); gradient.addColorStop(0, '#E0E0E0'); gradient.addColorStop(1, ufo.color); ctx.fillStyle = gradient; ctx.strokeStyle = '#424242'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(ufo.width / 2, ufo.height / 2, ufo.width / 2, ufo.height / 3, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'rgba(173, 216, 230, 0.7)'; ctx.strokeStyle = '#87CEEB'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(ufo.width / 2, ufo.height / 2, ufo.width / 4, Math.PI, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); const lightOn = Math.floor(Date.now() / 500) % 2 === 0; ctx.fillStyle = lightOn ? '#FF4136' : '#85144b'; ctx.fillRect(ufo.width * 0.2, ufo.height * 0.65, 10, 5); ctx.fillStyle = lightOn ? '#0074D9' : '#001f3f'; ctx.fillRect(ufo.width * 0.5 - 5, ufo.height * 0.7, 10, 5); ctx.fillStyle = lightOn ? '#2ECC40' : '#018d19'; ctx.fillRect(ufo.width * 0.8 - 10, ufo.height * 0.65, 10, 5); ctx.restore(); }
         function drawPlayerPlane() { ctx.save(); ctx.translate(playerPlane.x, playerPlane.y); ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.fillStyle = '#C0C0C0'; ctx.fillRect(0, 0, playerPlane.width, playerPlane.height); ctx.strokeRect(0, 0, playerPlane.width, playerPlane.height); ctx.fillStyle = '#87CEEB'; ctx.fillRect(playerPlane.width - 25, 5, 20, 20); ctx.strokeRect(playerPlane.width - 25, 5, 20, 20); ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, playerPlane.height + 30); ctx.strokeRect(20, -15, 20, playerPlane.height + 30); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-20, 0); ctx.lineTo(0, -20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = 'black'; ctx.fillRect(playerPlane.width, 12, 15, 6); if (playerPlane.isLandingGearDown) { ctx.fillStyle = '#444'; ctx.fillRect(30, playerPlane.height, 10, 15); ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(35, playerPlane.height + 20, 8, 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }
         function drawGhost(ghost) { const p = ghost.width / 13; ctx.fillStyle = ghost.color; ctx.fillRect(ghost.x + p*3, ghost.y + 0, p*7, p); ctx.fillRect(ghost.x + p*2, ghost.y + p, p*9, p); ctx.fillRect(ghost.x + p, ghost.y + p*2, p*11, p*6); ctx.fillRect(ghost.x + 0, ghost.y + p*4, p*13, p*4); ctx.fillRect(ghost.x + 0, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*2, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*4, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*6, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*8, ghost.y + p*8, p, p*3); ctx.fillRect(ghost.x + p*10, ghost.y + p*8, p, p*2); ctx.fillRect(ghost.x + p*12, ghost.y + p*8, p, p*3); ctx.fillStyle = 'white'; ctx.fillRect(ghost.x + p*3, ghost.y + p*4, p*3, p*3); ctx.fillRect(ghost.x + p*7, ghost.y + p*4, p*3, p*3); ctx.fillStyle = (ghost.health < 3 && gameState === 'tank') ? 'white' : '#00f'; ctx.fillRect(ghost.x + p*4, ghost.y + p*5, p*2, p*2); ctx.fillRect(ghost.x + p*7, ghost.y + p*5, p*2, p*2); }
         function drawClouds() { ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; clouds.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2); ctx.arc(c.x - c.radius * 0.6, c.y + 5, c.radius * 0.7, 0, Math.PI * 2); ctx.arc(c.x + c.radius * 0.7, c.y + 3, c.radius * 0.8, 0, Math.PI * 2); ctx.fill(); }); }
@@ -445,18 +454,16 @@
             platforms.push(startPlatform); farthestPlatformX = startPlatform.width;
             for (let i = 0; i < 7; i++) spawnCloud(true); while (farthestPlatformX < CANVAS_WIDTH * 1.5) generateNewPlatform();
             setControlsForState('platformer');
-            loadHighScores(); // Load scores at the beginning of a new game
+            loadHighScores();
         }
         let lastTime = 0;
         function gameLoop(timestamp) { const deltaTime = timestamp - lastTime || 0; lastTime = timestamp; handleInput(); update(deltaTime); draw(); requestAnimationFrame(gameLoop); }
         
-        // --- ZAKTUALIZOWANE FUNKCJE TABLICY WYNIKÓW ---
         async function loadHighScores() {
             try {
                 const response = await fetch(`${LEADERBOARD_API_URL}/scores`);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 highScores = await response.json();
-                
                 if (highScores.length > 0) {
                     bannerPlane.bannerText = `LEADER:${highScores[0].name}-${highScores[0].score}`;
                 } else {
@@ -472,7 +479,6 @@
         async function saveHighScore() {
             const name = (playerNameInput.value.trim() || 'AAA').toUpperCase();
             const newScore = { name: name, score: score };
-
             try {
                 const response = await fetch(`${LEADERBOARD_API_URL}/scores`, {
                     method: 'POST',
@@ -481,7 +487,7 @@
                 });
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                highScores = data.scores; // Serwer zwraca zaktualizowaną listę
+                highScores = data.scores;
             } catch (error) {
                 console.error("Could not save high score:", error);
             }
@@ -491,12 +497,8 @@
             bgMusic.pause();
             if (!isMuted) gameOverSound.play();
             finalScoreEl.innerText = score;
-            
-            // Wait for scores to load before showing the screen
             await loadHighScores();
-            
-            const lowestHighScore = highScores.length < MAX_SCORES ? 0 : highScores[highScores.length - 1].score;
-            
+            const lowestHighScore = highScores.length < MAX_HIGH_SCORES ? 0 : highScores[highScores.length - 1].score;
             if (score > 0 && score > lowestHighScore) {
                 newHighScoreDiv.style.display = 'block';
                 saveScoreButton.innerText = 'SAVE & RESTART';
@@ -504,13 +506,12 @@
                 newHighScoreDiv.style.display = 'none';
                 saveScoreButton.innerText = 'PLAY AGAIN';
             }
-            
             highScoreList.innerHTML = highScores.map((s, i) => `<li><span>${i + 1}. ${s.name}</span><span>${s.score}</span></li>`).join('');
             gameOverScreen.style.display = 'flex';
         }
 
         saveScoreButton.addEventListener('click', async () => {
-            const lowestHighScore = highScores.length < MAX_SCORES ? 0 : highScores[highScores.length - 1].score;
+            const lowestHighScore = highScores.length < MAX_HIGH_SCORES ? 0 : highScores[highScores.length - 1].score;
             if (score > 0 && score > lowestHighScore) {
                 await saveHighScore();
             }
