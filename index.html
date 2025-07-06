@@ -11,7 +11,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow: hidden; /* Prevent scrollbars */
             background-color: #34495e;
             font-family: 'Press Start 2P', sans-serif;
             color: white;
@@ -19,12 +19,12 @@
         }
 
         #gameContainer {
-            position: fixed;
+            position: fixed; /* Make container cover the whole screen */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: flex;
+            display: flex; /* Use flexbox to center the canvas */
             justify-content: center;
             align-items: center;
         }
@@ -32,6 +32,7 @@
         #gameCanvas {
             border: 2px solid black;
             background-color: #87CEEB;
+            /* Use viewport units for max size and object-fit to maintain aspect ratio */
             max-width: 100vw;
             max-height: 100vh;
             object-fit: contain;
@@ -40,11 +41,12 @@
         #controls {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: center; /* Changed to center for vertical symmetry */
             position: fixed;
             bottom: 20px;
             left: 0;
             width: 100%;
+            /* Removed fixed height for more robust alignment */
             padding: 0 30px;
             box-sizing: border-box;
             z-index: 10;
@@ -56,7 +58,7 @@
         
         #d-pad {
             position: relative;
-            width: 150px;
+            width: 150px; /* Increased size to create a gap (70px + 10px gap + 70px) */
             height: 150px;
         }
         
@@ -75,22 +77,31 @@
             margin: 0;
         }
 
+        /* Create a CSS arrow using a pseudo-element */
         .d-pad-button::before {
             content: '';
             width: 0;
             height: 0;
             border-style: solid;
+            /* Creates an upward-pointing triangle */
             border-width: 0 12px 20px 12px;
             border-color: transparent transparent white transparent;
             position: absolute;
             left: 50%;
             top: 50%;
-            transform: translate(-50%, -60%);
+            transform: translate(-50%, -60%); /* Fine-tune vertical alignment */
         }
         
-        #rightButton::before { transform: translate(-50%, -50%) rotate(90deg); }
-        #downButton::before { transform: translate(-50%, -40%) rotate(180deg); }
-        #leftButton::before { transform: translate(-50%, -50%) rotate(-90deg); }
+        /* Rotate the triangle for other directions */
+        #rightButton::before {
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+        #downButton::before {
+            transform: translate(-50%, -40%) rotate(180deg);
+        }
+        #leftButton::before {
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
 
         #jumpButton {
             background-color: rgba(255, 20, 20, 0.4);
@@ -108,10 +119,26 @@
             text-align: center;
         }
         
-        #upButton { top: 0; left: 50%; transform: translateX(-50%); }
-        #leftButton { top: 50%; left: 0; transform: translateY(-50%); }
-        #rightButton { top: 50%; right: 0; transform: translateY(-50%); }
-        #downButton { bottom: 0; left: 50%; transform: translateX(-50%); }
+        #upButton {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #leftButton {
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        #rightButton {
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+        }
+        #downButton {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
 
         #gameOverScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.75); color: white; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 20; }
         #gameOverScreen h1 { font-size: 3em; margin-bottom: 20px; color: #ff4136; } #gameOverScreen h2 { font-size: 1.5em; margin-bottom: 30px; }
@@ -151,6 +178,7 @@
                 </div>
             </div>
         </div>
+
     </div>
     
     <!-- AUDIO -->
@@ -179,6 +207,7 @@
         const explosionSound = document.getElementById('explosionSound');
         const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
 
+        // --- OSTATECZNA POPRAWKA: Prawidłowy adres URL twojego backendu ---
         const LEADERBOARD_API_URL = "https://eosforus-stickman-leaderboard.hf.space";
 
         const CANVAS_WIDTH = canvas.width, CANVAS_HEIGHT = canvas.height;
