@@ -258,18 +258,16 @@
 
         const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, isVisible: true };
         const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false, isLandingGearDown: false };
-        // --- START OF CHANGES ---
-        // Regular banner plane logic (15 sec interval)
-        const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 15000 };
-        // Victory plane with shorter text
-        const victoryPlane = { x: -600, y: 100, width: 100, height: 30, speed: 3, bannerText: "Access Code: 2017", isVisible: false };
-        let hasVictoryPlaneFlown = false;
-        // --- END OF CHANGES ---
-        
         const tank = { x: 300, y: 450, width: 120, height: 50, vx: 0, speed: 3, isVisible: false, barrelLength: 50, wheelRotation: 0 };
         const ufo = { x: CANVAS_WIDTH / 2, y: 50, width: 180, height: 70, vx: 2, isVisible: false, health: 10, maxHealth: 10, color: '#757575'};
         const ghostFormation = { x: 100, y: 120, vx: 1, vy: 20, stepDown: false, width: 0 };
         
+        // --- START OF CHANGES ---
+        const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 15000 };
+        const victoryPlane = { x: -600, y: 100, width: 100, height: 30, speed: 3, bannerText: "Access Code: 2017", isVisible: false };
+        let hasVictoryPlaneFlown = false;
+        // --- END OF CHANGES ---
+
         let bullets = [], ghosts = [], platforms = [], clouds = [], explosions = [], ufoBombs = [];
         let cameraX = 0, score = 0, farthestPlatformX = 0, castle = null;
         let gameIsOver = false, currentLevel = 1, isMusicStarted = false;
@@ -527,11 +525,8 @@
                 ctx.save(); 
                 if (gameState === 'platformer') ctx.translate(-cameraX, 0); 
                 
-                // --- START OF CHANGES ---
-                // Draw both planes if they are visible
                 if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
                 if (victoryPlane.isVisible && gameState === 'platformer') drawVictoryPlane();
-                // --- END OF CHANGES ---
                 
                 drawPlatforms(); 
                 if (castle) drawCastle(); 
@@ -553,34 +548,48 @@
         function drawExplosions() { explosions.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 5, 5); }); }
         function spawnCastle() { const cX = farthestPlatformX + 200, cBY = MAX_Y_LEVEL, cW = 300 + Math.random() * 150, mKH = 150 + Math.random() * 100, lTH = mKH + 50 + Math.random() * 100, rTH = mKH + 50 + Math.random() * 100, lTW = cW * (0.25+Math.random()*0.1), rTW = cW * (0.25+Math.random()*0.1), kX = cX + lTW, kW = cW - lTW - rTW, gW = kW * 0.4, gH = mKH * 0.6; castle = { x: cX, y: cBY, width: cW, mainKeep: { h: mKH }, leftTower: { x: cX, y: cBY - lTH, w: lTW, h: lTH }, rightTower: { x: cX + cW - rTW, y: cBY - rTH, w: rTW, h: rTH }, gate: { x: kX + (kW-gW)/2, y: cBY - gH, w: gW, h: gH } }; platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor }); farthestPlatformX = castle.x + castle.width; }
         function drawCastle() { if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; const kX=castle.leftTower.x+castle.leftTower.w, kY=castle.y-castle.mainKeep.h, kW=castle.rightTower.x-kX; ctx.fillRect(kX,kY,kW,castle.mainKeep.h); ctx.strokeRect(kX,kY,kW,castle.mainKeep.h); ctx.fillRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.strokeRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.fillRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.strokeRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.fillStyle='#6B4226'; ctx.fillRect(castle.gate.x,castle.gate.y,castle.gate.w,castle.gate.h); }
-        function drawBannerPlane() { ctx.save(); ctx.translate(bannerPlane.x, bannerPlane.y); ctx.fillStyle='#F5F5DC'; ctx.strokeStyle='black'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.font='14px "Press Start 2P"'; ctx.textAlign='center'; ctx.fillText(bannerPlane.bannerText,-150,38); ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); ctx.restore(); }
-        
+        // --- START OF CHANGES ---
+        function drawBannerPlane() { 
+            ctx.save(); 
+            ctx.translate(bannerPlane.x, bannerPlane.y); 
+            ctx.fillStyle='#F5F5DC'; 
+            ctx.strokeStyle='black'; 
+            ctx.lineWidth=2; 
+            ctx.beginPath(); 
+            ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); 
+            ctx.fillStyle='black'; 
+            ctx.font='14px "Press Start 2P"'; 
+            ctx.textAlign='center'; 
+            ctx.fillText(bannerPlane.bannerText,-150,38); 
+            ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); 
+            ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); 
+            ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); 
+            ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); 
+            ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); 
+            ctx.restore(); 
+        }
+
         function drawVictoryPlane() {
             ctx.save();
             ctx.translate(victoryPlane.x, victoryPlane.y);
             
-            // --- START OF CHANGES ---
-            // Draw a shorter banner for the access code
             ctx.fillStyle = '#FFFFE0'; 
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(-10, 15);
-            ctx.lineTo(-320, 5);  // Shorter banner length
-            ctx.lineTo(-330, 45); // Shorter banner height
+            ctx.lineTo(-320, 5);
+            ctx.lineTo(-330, 45);
             ctx.lineTo(-20, 55);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // Draw the shorter text
             ctx.fillStyle = 'black';
-            ctx.font = '16px "Press Start 2P"'; // Slightly smaller font
+            ctx.font = '16px "Press Start 2P"';
             ctx.textAlign = 'center';
-            ctx.fillText(victoryPlane.bannerText, -170, 38); // Re-centered X position
-            // --- END OF CHANGES ---
+            ctx.fillText(victoryPlane.bannerText, -170, 38);
 
-            // Draw a colorful plane
             const planeGrad = ctx.createLinearGradient(0, 0, victoryPlane.width, 0);
             planeGrad.addColorStop(0, '#ff4136'); planeGrad.addColorStop(0.2, '#ff851b'); planeGrad.addColorStop(0.4, '#ffd700'); planeGrad.addColorStop(0.6, '#2ecc40'); planeGrad.addColorStop(0.8, '#0074d9'); planeGrad.addColorStop(1, '#b10dc9');
             ctx.fillStyle = planeGrad;
@@ -590,7 +599,8 @@
             
             ctx.restore();
         }
-
+        // --- END OF CHANGES ---
+        
         const keys = {};
         function handleInput() {
             if (gameIsOver) return;
@@ -612,7 +622,7 @@
             platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0]; 
             
             // --- START OF CHANGES ---
-            bannerPlane.timer = 0; // Reset timer for regular banner
+            bannerPlane.timer = 0;
             bannerPlane.isVisible = false;
             hasVictoryPlaneFlown = false;
             victoryPlane.isVisible = false;
