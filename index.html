@@ -258,15 +258,17 @@
 
         const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, isVisible: true };
         const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false, isLandingGearDown: false };
-        const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 25000, interval: 30000 };
+        // --- START OF CHANGES ---
+        // Regular banner plane logic (15 sec interval)
+        const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 15000 };
+        // Victory plane with shorter text
+        const victoryPlane = { x: -600, y: 100, width: 100, height: 30, speed: 3, bannerText: "Access Code: 2017", isVisible: false };
+        let hasVictoryPlaneFlown = false;
+        // --- END OF CHANGES ---
+        
         const tank = { x: 300, y: 450, width: 120, height: 50, vx: 0, speed: 3, isVisible: false, barrelLength: 50, wheelRotation: 0 };
         const ufo = { x: CANVAS_WIDTH / 2, y: 50, width: 180, height: 70, vx: 2, isVisible: false, health: 10, maxHealth: 10, color: '#757575'};
         const ghostFormation = { x: 100, y: 120, vx: 1, vy: 20, stepDown: false, width: 0 };
-        
-        // --- START OF CHANGES ---
-        const victoryPlane = { x: -600, y: 100, width: 100, height: 30, speed: 3, bannerText: "Congratulations Acces Code: 2017", isVisible: false };
-        let hasVictoryPlaneFlown = false;
-        // --- END OF CHANGES ---
         
         let bullets = [], ghosts = [], platforms = [], clouds = [], explosions = [], ufoBombs = [];
         let cameraX = 0, score = 0, farthestPlatformX = 0, castle = null;
@@ -309,9 +311,7 @@
             if (gameState === 'platformer') { 
                 updatePlatformer(); 
                 updateBannerPlane(deltaTime);
-                // --- START OF CHANGES ---
                 updateVictoryPlane(deltaTime);
-                // --- END OF CHANGES ---
             } 
             else if (gameState === 'takeoff') updateTakeoff();
             else if (gameState === 'flying') updateFlying();
@@ -421,15 +421,11 @@
                         triggerExplosion(ufo.x + ufo.width/2, ufo.y + ufo.height/2);
                         ufo.isVisible = false; tank.isVisible = false;
                         setTimeout(() => {
-                            // --- START OF CHANGES ---
-                            // Trigger the victory plane if it hasn't flown yet
                             if (!hasVictoryPlaneFlown) {
                                 victoryPlane.isVisible = true;
-                                victoryPlane.x = -600; // Start off-screen
+                                victoryPlane.x = -600;
                                 hasVictoryPlaneFlown = true;
                             }
-                            // --- END OF CHANGES ---
-                            
                             stickman.x = tank.x + tank.width / 2;
                             stickman.y = tank.y - stickman.height;
                             gameState = 'platformer';
@@ -458,20 +454,17 @@
         function updateBannerPlane(deltaTime) {
             if (!bannerPlane.isVisible) {
                 bannerPlane.timer += deltaTime;
-                if (bannerPlane.timer >= bannerPlane.interval) { bannerPlane.isVisible = true; bannerPlane.timer = 0; bannerPlane.x = -350; bannerPlane.y = 80 + Math.random() * 120; }
-            } else { bannerPlane.x += bannerPlane.speed; if (bannerPlane.x > CANVAS_WIDTH + 350) bannerPlane.isVisible = false; }
+                if (bannerPlane.timer >= bannerPlane.interval) { bannerPlane.isVisible = true; bannerPlane.timer = 0; bannerPlane.x = -400; bannerPlane.y = 80 + Math.random() * 120; }
+            } else { bannerPlane.x += bannerPlane.speed; if (bannerPlane.x > CANVAS_WIDTH + 400) bannerPlane.isVisible = false; }
         }
-        // --- START OF CHANGES ---
         function updateVictoryPlane(deltaTime) {
             if (victoryPlane.isVisible) {
                 victoryPlane.x += victoryPlane.speed;
-                // Hide the plane after it flies off screen
                 if (victoryPlane.x > CANVAS_WIDTH + 600) {
                     victoryPlane.isVisible = false;
                 }
             }
         }
-        // --- END OF CHANGES ---
         function updateExplosions(deltaTime) { for(let i = explosions.length - 1; i >= 0; i--) { const p = explosions[i]; p.x += p.vx; p.y += p.vy; p.life -= deltaTime; if(p.life <= 0) explosions.splice(i, 1); } }
         function clearAllEntities() { platforms = []; ghosts = []; bullets = []; ufoBombs = []; explosions = []; castle = null; }
         function prepareTakeoffLevel() {
@@ -534,8 +527,9 @@
                 ctx.save(); 
                 if (gameState === 'platformer') ctx.translate(-cameraX, 0); 
                 
-                if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
                 // --- START OF CHANGES ---
+                // Draw both planes if they are visible
+                if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
                 if (victoryPlane.isVisible && gameState === 'platformer') drawVictoryPlane();
                 // --- END OF CHANGES ---
                 
@@ -561,53 +555,41 @@
         function drawCastle() { if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; const kX=castle.leftTower.x+castle.leftTower.w, kY=castle.y-castle.mainKeep.h, kW=castle.rightTower.x-kX; ctx.fillRect(kX,kY,kW,castle.mainKeep.h); ctx.strokeRect(kX,kY,kW,castle.mainKeep.h); ctx.fillRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.strokeRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.fillRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.strokeRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.fillStyle='#6B4226'; ctx.fillRect(castle.gate.x,castle.gate.y,castle.gate.w,castle.gate.h); }
         function drawBannerPlane() { ctx.save(); ctx.translate(bannerPlane.x, bannerPlane.y); ctx.fillStyle='#F5F5DC'; ctx.strokeStyle='black'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.font='14px "Press Start 2P"'; ctx.textAlign='center'; ctx.fillText(bannerPlane.bannerText,-150,38); ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); ctx.restore(); }
         
-        // --- START OF CHANGES ---
         function drawVictoryPlane() {
             ctx.save();
             ctx.translate(victoryPlane.x, victoryPlane.y);
             
-            // Draw a big banner
-            ctx.fillStyle = '#FFFFE0'; // Light yellow for the banner
+            // --- START OF CHANGES ---
+            // Draw a shorter banner for the access code
+            ctx.fillStyle = '#FFFFE0'; 
             ctx.strokeStyle = 'black';
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(-10, 15);
-            ctx.lineTo(-550, 5);  // Make banner much longer
-            ctx.lineTo(-560, 65); // Make banner taller
-            ctx.lineTo(-20, 75);
+            ctx.lineTo(-320, 5);  // Shorter banner length
+            ctx.lineTo(-330, 45); // Shorter banner height
+            ctx.lineTo(-20, 55);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
             
-            // Draw the big text
+            // Draw the shorter text
             ctx.fillStyle = 'black';
-            ctx.font = '20px "Press Start 2P"';
+            ctx.font = '16px "Press Start 2P"'; // Slightly smaller font
             ctx.textAlign = 'center';
-            ctx.fillText(victoryPlane.bannerText, -285, 48);
+            ctx.fillText(victoryPlane.bannerText, -170, 38); // Re-centered X position
+            // --- END OF CHANGES ---
 
             // Draw a colorful plane
             const planeGrad = ctx.createLinearGradient(0, 0, victoryPlane.width, 0);
-            planeGrad.addColorStop(0, '#ff4136'); // Red
-            planeGrad.addColorStop(0.2, '#ff851b'); // Orange
-            planeGrad.addColorStop(0.4, '#ffd700'); // Yellow
-            planeGrad.addColorStop(0.6, '#2ecc40'); // Green
-            planeGrad.addColorStop(0.8, '#0074d9'); // Blue
-            planeGrad.addColorStop(1, '#b10dc9'); // Violet
+            planeGrad.addColorStop(0, '#ff4136'); planeGrad.addColorStop(0.2, '#ff851b'); planeGrad.addColorStop(0.4, '#ffd700'); planeGrad.addColorStop(0.6, '#2ecc40'); planeGrad.addColorStop(0.8, '#0074d9'); planeGrad.addColorStop(1, '#b10dc9');
             ctx.fillStyle = planeGrad;
             ctx.fillRect(0, 0, victoryPlane.width, victoryPlane.height);
             ctx.strokeRect(0, 0, victoryPlane.width, victoryPlane.height);
-            
-            // Other plane details
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(victoryPlane.width - 25, 5, 20, 20);
-            ctx.strokeRect(victoryPlane.width - 25, 5, 20, 20);
-            ctx.fillStyle = '#A9A9A9';
-            ctx.fillRect(20, -15, 20, victoryPlane.height + 30);
-            ctx.strokeRect(20, -15, 20, victoryPlane.height + 30);
+            ctx.fillStyle = '#87CEEB'; ctx.fillRect(victoryPlane.width - 25, 5, 20, 20); ctx.strokeRect(victoryPlane.width - 25, 5, 20, 20); ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, victoryPlane.height + 30); ctx.strokeRect(20, -15, 20, victoryPlane.height + 30);
             
             ctx.restore();
         }
-        // --- END OF CHANGES ---
 
         const keys = {};
         function handleInput() {
@@ -627,14 +609,16 @@
             gameIsOver = false; isMusicStarted = false; gameOverScreen.style.display = 'none'; currentLevel = 1; score = 0; cameraX = 0;
             gameState = 'platformer'; 
             playerPlane.isVisible = false; tank.isVisible = false; ufo.isVisible = false; stickman.isVisible = true;
-            platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0]; bannerPlane.timer = 25000; bannerPlane.isVisible = false;
-            stickman.x = 150; stickman.y = 400; stickman.vx = 0; stickman.vy = 0; stickman.isJumping = false;
+            platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0]; 
             
             // --- START OF CHANGES ---
+            bannerPlane.timer = 0; // Reset timer for regular banner
+            bannerPlane.isVisible = false;
             hasVictoryPlaneFlown = false;
             victoryPlane.isVisible = false;
             // --- END OF CHANGES ---
 
+            stickman.x = 150; stickman.y = 400; stickman.vx = 0; stickman.vy = 0; stickman.isJumping = false;
             clearAllEntities();
             const startPlatform = { x: 0, y: 500, width: 400, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor };
             platforms.push(startPlatform); farthestPlatformX = startPlatform.width;
