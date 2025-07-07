@@ -147,7 +147,32 @@
         #saveScoreButton { margin-top: 15px; padding: 15px 30px; font-size: 1em; background: #0074d9; border: 2px solid white; color: white; cursor: pointer; font-family: 'Press Start 2P', sans-serif; }
         #highScoreContainer h3 { font-size: 1.2em; margin-bottom: 10px; color: #ffd700; } #highScoreList { list-style-type: none; padding: 0; width: 350px; font-size: 0.9em; }
         #highScoreList li { display: flex; justify-content: space-between; padding: 5px 0; }
-        #muteButton { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.3); color: white; border: 2px solid white; border-radius: 5px; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 15; user-select: none; }
+        
+        /* --- START OF CHANGES --- */
+        #audioControls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 15;
+            display: flex;
+            gap: 10px;
+        }
+        #musicMuteButton, #sfxMuteButton {
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* --- END OF CHANGES --- */
+
         #backButton { position: absolute; top: 15px; left: 15px; padding: 10px 15px; background: rgba(0,0,0,0.3); color: white; text-decoration: none; border: 2px solid white; border-radius: 5px; font-size: 1em; font-family: 'Press Start 2P', sans-serif; cursor: pointer; z-index: 15; user-select: none; }
         #closeLeaderboardButton { position: absolute; top: 15px; right: 20px; background: transparent; border: 2px solid white; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 28px; line-height: 36px; text-align: center; cursor: pointer; z-index: 21; font-family: Arial, sans-serif; padding: 0; }
         #closeLeaderboardButton:hover { background: rgba(255, 255, 255, 0.2); }
@@ -157,7 +182,14 @@
     <a href="https://0-skar.github.io/0/" id="backButton">« BACK</a>
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <button id="muteButton">🔊</button>
+        
+        <!-- --- START OF CHANGES --- -->
+        <div id="audioControls">
+            <button id="musicMuteButton">🎶</button>
+            <button id="sfxMuteButton">🔊</button>
+        </div>
+        <!-- --- END OF CHANGES --- -->
+        
         <div id="gameOverScreen">
             <button id="closeLeaderboardButton">×</button>
             <h1>GAME OVER</h1>
@@ -198,16 +230,23 @@
         const saveScoreButton = document.getElementById('saveScoreButton');
         const highScoreList = document.getElementById('highScoreList');
         const newHighScoreDiv = document.getElementById('newHighScore');
-        const muteButton = document.getElementById('muteButton');
+        const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
+
+        // --- START OF CHANGES ---
+        const musicMuteButton = document.getElementById('musicMuteButton');
+        const sfxMuteButton = document.getElementById('sfxMuteButton');
+
         const bgMusic = document.getElementById('bgMusic');
         const gameOverSound = document.getElementById('gameOverSound');
         const jumpSound = document.getElementById('jumpSound');
         const shootSound = document.getElementById('shootSound');
         const ghostHitSound = document.getElementById('ghostHitSound');
         const explosionSound = document.getElementById('explosionSound');
-        const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
+        
+        // Group SFX for easier control
+        const sfxSounds = [gameOverSound, jumpSound, shootSound, ghostHitSound, explosionSound];
+        // --- END OF CHANGES ---
 
-        // --- OSTATECZNA POPRAWKA: Prawidłowy adres URL twojego backendu ---
         const LEADERBOARD_API_URL = "https://eosforus-stickman-leaderboard.hf.space";
 
         const CANVAS_WIDTH = canvas.width, CANVAS_HEIGHT = canvas.height;
@@ -233,11 +272,35 @@
         
         let bullets = [], ghosts = [], platforms = [], clouds = [], explosions = [], ufoBombs = [];
         let cameraX = 0, score = 0, farthestPlatformX = 0, castle = null;
-        let gameIsOver = false, currentLevel = 1, isMusicStarted = false, isMuted = false;
+        let gameIsOver = false, currentLevel = 1, isMusicStarted = false;
+        
+        // --- START OF CHANGES ---
+        // Separate mute states
+        let isMusicMuted = false;
+        let isSfxMuted = false;
+        // --- END OF CHANGES ---
+        
         let highScores = [];
 
-        function startMusicIfNeeded() { if (!isMusicStarted && !isMuted) bgMusic.play().catch(e => {}); }
-        muteButton.addEventListener('click', () => { isMuted = !isMuted; [bgMusic, gameOverSound, jumpSound, shootSound, ghostHitSound, explosionSound].forEach(s => s.muted = isMuted); muteButton.innerText = isMuted ? '🔇' : '🔊'; if (!isMuted && !isMusicStarted) startMusicIfNeeded(); });
+        // --- START OF CHANGES ---
+        function startMusicIfNeeded() { if (!isMusicStarted && !isMusicMuted) bgMusic.play().catch(e => {}); }
+        
+        musicMuteButton.addEventListener('click', () => {
+            isMusicMuted = !isMusicMuted;
+            bgMusic.muted = isMusicMuted;
+            musicMuteButton.innerText = isMusicMuted ? '🎵' : '🎶';
+            if (!isMusicMuted && !isMusicStarted) {
+                startMusicIfNeeded();
+            }
+        });
+
+        sfxMuteButton.addEventListener('click', () => {
+            isSfxMuted = !isSfxMuted;
+            sfxSounds.forEach(s => s.muted = isSfxMuted);
+            sfxMuteButton.innerText = isSfxMuted ? '🔇' : '🔊';
+        });
+        // --- END OF CHANGES ---
+
         closeLeaderboardButton.addEventListener('click', () => { resetGame(); });
 
         function setControlsForState(state) {
@@ -288,14 +351,14 @@
                 if (gameState === 'flying') { if (g.y < playerPlane.y) g.y += 0.5; else if (g.y > playerPlane.y) g.y -= 0.5; }
                 if (playerPlane.x < g.x + g.width && playerPlane.x + playerPlane.width > g.x && playerPlane.y < g.y + g.height && playerPlane.y + playerPlane.height > g.y) {
                     triggerExplosion(playerPlane.x + playerPlane.width/2, playerPlane.y + playerPlane.height/2); playerPlane.isVisible = false; gameIsOver = true; 
-                    if (!isMuted) explosionSound.play(); setTimeout(showGameOverScreen, 1000);
+                    if (!isSfxMuted) explosionSound.play(); setTimeout(showGameOverScreen, 1000);
                 }
             });
             ghosts = ghosts.filter(g => g.x + g.width > 0);
             for (let b = bullets.length - 1; b >= 0; b--) {
                 for (let g = ghosts.length - 1; g >= 0; g--) {
                     if (bullets[b].x < ghosts[g].x + ghosts[g].width && bullets[b].x + bullets[b].width > ghosts[g].x && bullets[b].y < ghosts[g].y + ghosts[g].height && bullets[b].y + bullets[b].height > ghosts[g].y) {
-                        if (!isMuted) ghostHitSound.play(); 
+                        if (!isSfxMuted) ghostHitSound.play(); 
                         score += 20; levelScore += 20;
                         bullets.splice(b, 1); ghosts.splice(g, 1); break;
                     }
@@ -329,7 +392,7 @@
                 if(ghostFormation.x < 0 || ghostFormation.x + ghostFormation.width > CANVAS_WIDTH) { ghostFormation.vx *= -1; ghostFormation.stepDown = true; }
                 ghosts.forEach(g => {
                     g.x += ghostFormation.vx; if(ghostFormation.stepDown) { g.y += ghostFormation.vy; }
-                    if(g.y + g.height >= tank.y) { triggerExplosion(tank.x + tank.width/2, tank.y); tank.isVisible = false; gameIsOver = true; if(!isMuted)explosionSound.play(); setTimeout(showGameOverScreen, 1000); }
+                    if(g.y + g.height >= tank.y) { triggerExplosion(tank.x + tank.width/2, tank.y); tank.isVisible = false; gameIsOver = true; if(!isSfxMuted)explosionSound.play(); setTimeout(showGameOverScreen, 1000); }
                 });
                 if(ghostFormation.stepDown) ghostFormation.stepDown = false;
             }
@@ -341,7 +404,7 @@
                     const ghost = ghosts[g];
                     if (bullet.x > ghost.x && bullet.x < ghost.x + ghost.width && bullet.y > ghost.y && bullet.y < ghost.y + ghost.height) {
                         ghost.health--;
-                        if (!isMuted) ghostHitSound.play();
+                        if (!isSfxMuted) ghostHitSound.play();
                         bullets.splice(b, 1);
                         if (ghost.health === 2) { score += 10; levelScore += 10; ghost.color = '#0074d9'; } else if (ghost.health === 1) { score += 10; levelScore += 10; ghost.color = '#ff4136'; } else if (ghost.health <= 0) { score += 10; levelScore += 10; ghosts.splice(g, 1); }
                         break; 
@@ -353,9 +416,9 @@
                     score += 5; levelScore += 5;
                     ufo.color = ufoHitColors[Math.floor(Math.random() * ufoHitColors.length)];
                     bullets.splice(b, 1);
-                    if (!isMuted) ghostHitSound.play();
+                    if (!isSfxMuted) ghostHitSound.play();
                     if (ufo.health <= 0) {
-                        if (!isMuted) explosionSound.play();
+                        if (!isSfxMuted) explosionSound.play();
                         triggerExplosion(ufo.x + ufo.width/2, ufo.y + ufo.height/2);
                         ufo.isVisible = false; tank.isVisible = false;
                         setTimeout(() => {
@@ -379,7 +442,7 @@
                 if (bomb.y > CANVAS_HEIGHT) { ufoBombs.splice(i, 1); continue; }
                 if (tank.isVisible && bomb.x > tank.x && bomb.x < tank.x + tank.width && bomb.y + bomb.height > tank.y && bomb.y < tank.y + tank.height) {
                     triggerExplosion(tank.x + tank.width / 2, tank.y); tank.isVisible = false; gameIsOver = true;
-                    if (!isMuted) explosionSound.play(); setTimeout(showGameOverScreen, 1000);
+                    if (!isSfxMuted) explosionSound.play(); setTimeout(showGameOverScreen, 1000);
                     ufoBombs.splice(i, 1); break;
                 }
             }
@@ -428,7 +491,7 @@
             if (gameState === 'tank') {
                 if (ufo.isVisible) { bullets.push({ x: tank.x + tank.width / 2 - 10, y: tank.y - tank.barrelLength, vx: 0, vy: -4, width: 20, height: 40 }); } else if(ghosts.length > 0) { bullets.push({ x: tank.x + tank.width/2 - 4, y: tank.y - tank.barrelLength, vx: 0, vy: -10, width: 8, height: 8 }); }
             } else { bullets.push({ x: playerPlane.x + playerPlane.width, y: playerPlane.y + playerPlane.height / 2 - 2.5, vx: 10, vy: 0, width: 15, height: 5 }); }
-            if (!isMuted) { shootSound.currentTime = 0; shootSound.play(); }
+            if (!isSfxMuted) { shootSound.currentTime = 0; shootSound.play(); }
         }
         function spawnGhost() { ghosts.push({ x: CANVAS_WIDTH, y: Math.random() * (CANVAS_HEIGHT - 100), width: 39, height: 39, speed: 1 + Math.random() * 2, color: ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][Math.floor(Math.random() * 4)] }); }
         function spawnUfoBomb() { if (!ufo.isVisible) return; ufoBombs.push({ x: ufo.x + ufo.width * Math.random(), y: ufo.y + ufo.height, width: 20, height: 20, vy: 4, color: '#FF4136' }); }
@@ -468,7 +531,7 @@
         window.addEventListener('keydown', (e) => { startMusicIfNeeded(); if (gameIsOver) { if (e.key === 'Enter') saveScoreButton.click(); return; } keys[e.key.toLowerCase().replace('arrow','')] = true; if (e.key === ' ') { e.preventDefault(); handleInputForJump(); } });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase().replace('arrow','')] = false; });
         function buttonPress(id, isPressed) { startMusicIfNeeded(); let keyName = id.replace('Button',''); if (keyName === 'jump') { if(isPressed) handleInputForJump(); return; } if (gameState === 'tank' && (keyName === 'up' || keyName === 'down')) return; keys[keyName] = isPressed; }
-        function handleInputForJump() { if ((gameState === 'platformer' || gameState === 'takeoff') && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isMuted) { jumpSound.currentTime = 0; jumpSound.play(); } } else if (gameState === 'flying' || gameState === 'landing' || gameState === 'tank') shoot(); }
+        function handleInputForJump() { if ((gameState === 'platformer' || gameState === 'takeoff') && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isSfxMuted) { jumpSound.currentTime = 0; jumpSound.play(); } } else if (gameState === 'flying' || gameState === 'landing' || gameState === 'tank') shoot(); }
         ['touchstart', 'mousedown'].forEach(evt => { ['leftButton', 'rightButton', 'jumpButton', 'upButton', 'downButton'].forEach(id => { document.getElementById(id).addEventListener(evt, (e) => { e.preventDefault(); buttonPress(id, true); }); }); });
         ['touchend', 'mouseup', 'mouseleave', 'touchcancel'].forEach(evt => { ['leftButton', 'rightButton', 'jumpButton', 'upButton', 'downButton'].forEach(id => { document.getElementById(id).addEventListener(evt, (e) => { e.preventDefault(); buttonPress(id, false); }); }); });
 
@@ -524,7 +587,7 @@
 
         async function showGameOverScreen() {
             bgMusic.pause();
-            if (!isMuted) gameOverSound.play();
+            if (!isSfxMuted) gameOverSound.play();
             finalScoreEl.innerText = score;
             await loadHighScores();
             const lowestHighScore = highScores.length < MAX_HIGH_SCORES ? 0 : highScores[highScores.length - 1].score;
