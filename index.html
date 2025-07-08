@@ -259,9 +259,7 @@
         const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, isVisible: true };
         const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false, isLandingGearDown: false };
         const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 30000 };
-        // --- START OF CHANGES ---
         const codeBannerPlane = { x: -400, y: 100, width: 100, height: 30, speed: 3, bannerText: "CODE: LVLUP", isVisible: false };
-        // --- END OF CHANGES ---
         const tank = { x: 300, y: 450, width: 120, height: 50, vx: 0, speed: 3, isVisible: false, barrelLength: 50, wheelRotation: 0 };
         const ufo = { x: CANVAS_WIDTH / 2, y: 50, width: 180, height: 70, vx: 2, isVisible: false, health: 10, maxHealth: 10, color: '#757575'};
         const ghostFormation = { x: 100, y: 120, vx: 1, vy: 20, stepDown: false, width: 0 };
@@ -275,14 +273,14 @@
         
         let highScores = [];
 
-        function startMusicIfNeeded() { if (!isMusicStarted && !isMusicMuted) bgMusic.play().catch(e => {}); }
+        function startMusicIfNeeded() { if (!isMusicStarted && !isMusicMuted) { bgMusic.play().catch(e => {}); isMusicStarted = true; } }
         
         musicMuteButton.addEventListener('click', () => {
             isMusicMuted = !isMusicMuted;
             bgMusic.muted = isMusicMuted;
             musicMuteButton.innerText = isMusicMuted ? '🎵' : '🎶';
-            if (!isMusicMuted && !isMusicStarted) {
-                startMusicIfNeeded();
+            if (!isMusicMuted && isMusicStarted) {
+                bgMusic.play().catch(e => {});
             } else if (isMusicMuted) {
                 bgMusic.pause();
             }
@@ -304,6 +302,10 @@
         }
         function update(deltaTime) {
             updateExplosions(deltaTime); 
+            // --- START OF CHANGES ---
+            // The code plane is updated globally so it persists across levels
+            updateCodeBannerPlane(deltaTime);
+            // --- END OF CHANGES ---
             if (gameIsOver) { return; } 
             clouds.forEach(c => c.x -= c.speed); clouds = clouds.filter(c => c.x + c.radius * 2 > 0); if (Math.random() < 0.007) spawnCloud();
             if (gameState === 'platformer') { 
@@ -317,9 +319,6 @@
                 updateLanding();
             } else if (gameState === 'tank') { 
                 updateTank(); 
-                // --- START OF CHANGES ---
-                updateCodeBannerPlane(deltaTime);
-                // --- END OF CHANGES ---
             }
         }
         function updatePlatformer() {
@@ -424,9 +423,12 @@
                         if (!isSfxMuted) explosionSound.play();
                         triggerExplosion(ufo.x + ufo.width/2, ufo.y + ufo.height/2);
                         ufo.isVisible = false; tank.isVisible = false;
+                        
                         // --- START OF CHANGES ---
-                        triggerCodeBannerPlane();
+                        // Trigger plane after explosion starts, to give it time to be seen.
+                        setTimeout(() => triggerCodeBannerPlane(), 800);
                         // --- END OF CHANGES ---
+
                         setTimeout(() => {
                             stickman.x = tank.x + tank.width / 2;
                             stickman.y = tank.y - stickman.height;
@@ -455,9 +457,11 @@
         }
         function updateBannerPlane(deltaTime) {
             // --- START OF CHANGES ---
-            // Set interval based on game state for more frequent planes
-            bannerPlane.interval = (gameState === 'platformer') ? 10000 : 30000;
+            // Don't run the regular banner plane if the special code plane is active
+            if (codeBannerPlane.isVisible) return;
             // --- END OF CHANGES ---
+
+            bannerPlane.interval = (gameState === 'platformer') ? 10000 : 30000;
 
             if (!bannerPlane.isVisible) {
                 bannerPlane.timer += deltaTime;
@@ -472,7 +476,6 @@
                 if (bannerPlane.x > CANVAS_WIDTH + 350) bannerPlane.isVisible = false; 
             }
         }
-        // --- START OF CHANGES ---
         function updateCodeBannerPlane(deltaTime) {
             if (codeBannerPlane.isVisible) {
                 codeBannerPlane.x += codeBannerPlane.speed;
@@ -481,7 +484,6 @@
                 }
             }
         }
-        // --- END OF CHANGES ---
         function updateExplosions(deltaTime) { for(let i = explosions.length - 1; i >= 0; i--) { const p = explosions[i]; p.x += p.vx; p.y += p.vy; p.life -= deltaTime; if(p.life <= 0) explosions.splice(i, 1); } }
         function clearAllEntities() { platforms = []; ghosts = []; bullets = []; ufoBombs = []; explosions = []; castle = null; }
         function prepareTakeoffLevel() {
@@ -530,20 +532,16 @@
             const initialHealth = (currentLevel >= 4) ? 3 : 2;
             for(let r = 0; r < rows; r++) { for(let c = 0; c < cols; c++) { const color = ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][r % 4]; ghosts.push({ x: ghostFormation.x + c * spacing, y: ghostFormation.y + r * spacing, width: 39, height: 39, speed: 1, color: color, health: initialHealth }); } }
         }
-        // --- START OF CHANGES ---
         function triggerCodeBannerPlane() {
             codeBannerPlane.isVisible = true;
             codeBannerPlane.x = -350;
             codeBannerPlane.y = 100 + Math.random() * 100;
         }
-        // --- END OF CHANGES ---
         function triggerExplosion(x, y) { for (let i = 0; i < 25; i++) { const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 4; explosions.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 600 + Math.random() * 400, color: ['red', 'orange', 'yellow'][Math.floor(Math.random()*3)] }); } }
         function draw() {
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); drawClouds();
-            // --- START OF CHANGES ---
             if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
             if (codeBannerPlane.isVisible) drawCodeBannerPlane();
-            // --- END OF CHANGES ---
             if (gameState === 'tank') { drawPlatforms(); if (tank.isVisible) drawTank(); ghosts.forEach(drawGhost); bullets.forEach(drawBullet); if (ufo.isVisible) { drawUfo(); drawUfoBombs(); } } else { ctx.save(); if (gameState === 'platformer') ctx.translate(-cameraX, 0); drawPlatforms(); if (castle) drawCastle(); if (playerPlane.isVisible) drawPlayerPlane(); if (stickman.isVisible) drawStickman(); if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); } ctx.restore(); }
             drawHUD(); drawExplosions();
         }
@@ -559,7 +557,6 @@
         function spawnCastle() { const cX = farthestPlatformX + 200, cBY = MAX_Y_LEVEL, cW = 300 + Math.random() * 150, mKH = 150 + Math.random() * 100, lTH = mKH + 50 + Math.random() * 100, rTH = mKH + 50 + Math.random() * 100, lTW = cW * (0.25+Math.random()*0.1), rTW = cW * (0.25+Math.random()*0.1), kX = cX + lTW, kW = cW - lTW - rTW, gW = kW * 0.4, gH = mKH * 0.6; castle = { x: cX, y: cBY, width: cW, mainKeep: { h: mKH }, leftTower: { x: cX, y: cBY - lTH, w: lTW, h: lTH }, rightTower: { x: cX + cW - rTW, y: cBY - rTH, w: rTW, h: rTH }, gate: { x: kX + (kW-gW)/2, y: cBY - gH, w: gW, h: gH } }; platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor }); farthestPlatformX = castle.x + castle.width; }
         function drawCastle() { if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; const kX=castle.leftTower.x+castle.leftTower.w, kY=castle.y-castle.mainKeep.h, kW=castle.rightTower.x-kX; ctx.fillRect(kX,kY,kW,castle.mainKeep.h); ctx.strokeRect(kX,kY,kW,castle.mainKeep.h); ctx.fillRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.strokeRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.fillRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.strokeRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.fillStyle='#6B4226'; ctx.fillRect(castle.gate.x,castle.gate.y,castle.gate.w,castle.gate.h); }
         function drawBannerPlane() { ctx.save(); ctx.translate(bannerPlane.x, bannerPlane.y); ctx.fillStyle='#F5F5DC'; ctx.strokeStyle='black'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.font='14px "Press Start 2P"'; ctx.textAlign='center'; ctx.fillText(bannerPlane.bannerText,-150,38); ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); ctx.restore(); }
-        // --- START OF CHANGES ---
         function drawCodeBannerPlane() {
             const plane = codeBannerPlane;
             ctx.save();
@@ -604,7 +601,6 @@
             ctx.fillRect(plane.width,12,15,6);
             ctx.restore();
         }
-        // --- END OF CHANGES ---
         
         const keys = {};
         function handleInput() {
@@ -626,11 +622,9 @@
             playerPlane.isVisible = false; tank.isVisible = false; ufo.isVisible = false; stickman.isVisible = true;
             platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0]; 
             
-            // --- START OF CHANGES ---
             bannerPlane.timer = bannerPlane.interval; // Appear immediately
             bannerPlane.isVisible = false;
             codeBannerPlane.isVisible = false;
-            // --- END OF CHANGES ---
 
             stickman.x = 150; stickman.y = 400; stickman.vx = 0; stickman.vy = 0; stickman.isJumping = false;
             clearAllEntities();
