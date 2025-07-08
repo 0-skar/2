@@ -197,9 +197,7 @@
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         
         <div id="audioControls">
-            <!-- --- START OF CHANGES --- -->
             <button id="musicMuteButton">♫</button>
-            <!-- --- END OF CHANGES --- -->
             <button id="sfxMuteButton">🔊</button>
         </div>
         
@@ -332,6 +330,10 @@
                 updateFlying();
             } else if (gameState === 'landing') {
                 updateLanding();
+            // --- START OF CHANGES ---
+            } else if (gameState === 'boardingTank') {
+                updateBoardingTank();
+            // --- END OF CHANGES ---
             } else if (gameState === 'tank') { 
                 updateTank(); 
             }
@@ -358,6 +360,33 @@
                 stickman.isVisible = false; levelScore = 0; gameState = 'flying'; playerPlane.vx = playerPlane.speed; setControlsForState('flying');
             }
         }
+        // --- START OF CHANGES ---
+        function updateBoardingTank() {
+            stickman.vy += stickman.GRAVITY;
+            stickman.x += stickman.vx;
+            stickman.y += stickman.vy;
+
+            const ground = platforms[0];
+            if (stickman.y + stickman.height > ground.y) {
+                stickman.y = ground.y - stickman.height;
+                stickman.vy = 0;
+                stickman.isJumping = false;
+            }
+
+            // Check for collision with the tank
+            if (stickman.x < tank.x + tank.width &&
+                stickman.x + stickman.width > tank.x &&
+                stickman.y < tank.y + tank.height &&
+                stickman.y + stickman.height > tank.y) {
+                
+                stickman.isVisible = false;
+                levelScore = 0;
+                gameState = 'tank';
+                setControlsForState('tank');
+                createGhostFormation(); // Spawn enemies only after boarding
+            }
+        }
+        // --- END OF CHANGES ---
         function updateFlyingAndLandingSharedLogic() {
             playerPlane.x += playerPlane.vx; playerPlane.y += playerPlane.vy;
             if (playerPlane.x < 0) playerPlane.x = 0; if (playerPlane.x + playerPlane.width > CANVAS_WIDTH) playerPlane.x = CANVAS_WIDTH - playerPlane.width;
@@ -505,16 +534,36 @@
             gameState = 'takeoff';
             setControlsForState('platformer');
         }
+        // --- START OF CHANGES ---
         function prepareTankLevel() {
             gameIsOver = false; currentLevel++; levelScore = 0; cameraX = 0;
             clearAllEntities();
-            gameState = 'tank'; stickman.isVisible = false;
+            
+            // Set up the boarding state
+            gameState = 'boardingTank';
+            
+            // Create the ground
             const ground = { x: 0, y: 500, width: CANVAS_WIDTH, height: PLATFORM_HEIGHT * 5, color: '#8B4513' };
             platforms.push(ground);
-            tank.x = 300; tank.y = ground.y - tank.height; tank.isVisible = true; 
-            ufo.health = ufo.maxHealth; ufo.isVisible = false;
-            createGhostFormation(); setControlsForState('tank');
+            
+            // Position stickman and tank for boarding
+            stickman.x = 100;
+            stickman.y = ground.y - stickman.height;
+            stickman.vx = 0;
+            stickman.vy = 0;
+            stickman.isVisible = true;
+
+            tank.x = 300; 
+            tank.y = ground.y - tank.height; 
+            tank.isVisible = true; 
+
+            ufo.health = ufo.maxHealth;
+            ufo.isVisible = false;
+            
+            // Set controls for platforming so the player can move
+            setControlsForState('platformer');
         }
+        // --- END OF CHANGES ---
         function startNextLevel() {
             currentLevel++; platformingLevelStartScore = score; stickman.isVisible = true;
             gameState = 'platformer';
@@ -555,7 +604,28 @@
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); drawClouds();
             if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
             if (codeBannerPlane.isVisible) drawCodeBannerPlane();
-            if (gameState === 'tank') { drawPlatforms(); if (tank.isVisible) drawTank(); ghosts.forEach(drawGhost); bullets.forEach(drawBullet); if (ufo.isVisible) { drawUfo(); drawUfoBombs(); } } else { ctx.save(); if (gameState === 'platformer') ctx.translate(-cameraX, 0); drawPlatforms(); if (castle) drawCastle(); if (playerPlane.isVisible) drawPlayerPlane(); if (stickman.isVisible) drawStickman(); if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); } ctx.restore(); }
+            // --- START OF CHANGES ---
+            if (gameState === 'tank') {
+                drawPlatforms();
+                if (tank.isVisible) drawTank();
+                ghosts.forEach(drawGhost);
+                bullets.forEach(drawBullet);
+                if (ufo.isVisible) { drawUfo(); drawUfoBombs(); }
+            } else if (gameState === 'boardingTank') {
+                drawPlatforms();
+                if (stickman.isVisible) drawStickman();
+                if (tank.isVisible) drawTank();
+            } else { 
+            // --- END OF CHANGES ---
+                ctx.save(); 
+                if (gameState === 'platformer') ctx.translate(-cameraX, 0); 
+                drawPlatforms(); 
+                if (castle) drawCastle(); 
+                if (playerPlane.isVisible) drawPlayerPlane(); 
+                if (stickman.isVisible) drawStickman(); 
+                if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); } 
+                ctx.restore(); 
+            }
             drawHUD(); drawExplosions();
         }
         function drawTank() { ctx.save(); ctx.translate(tank.x, tank.y); const bodyGrad = ctx.createLinearGradient(0, 0, 0, tank.height); bodyGrad.addColorStop(0, '#4a00e0'); bodyGrad.addColorStop(1, '#8e2de2'); ctx.fillStyle = bodyGrad; ctx.beginPath(); ctx.moveTo(0, tank.height); ctx.lineTo(10, 10); ctx.lineTo(tank.width - 10, 10); ctx.lineTo(tank.width, tank.height); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(173, 216, 230, 0.5)'; ctx.strokeStyle = '#ADD8E6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tank.width / 2, 10, tank.width / 3, Math.PI, 2 * Math.PI); ctx.fill(); ctx.stroke(); const barrelX = tank.width / 2; ctx.fillStyle = '#6c7a89'; ctx.fillRect(barrelX - 5, -tank.barrelLength, 10, tank.barrelLength); const wheelRadius = 20; const wheelPositions = [tank.width * 0.2, tank.width * 0.8]; wheelPositions.forEach(posX => { ctx.save(); ctx.translate(posX, tank.height); ctx.rotate(tank.wheelRotation); ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#8e2de2'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#4a00e0'; ctx.lineWidth = 3; for(let i = 0; i < 3; i++){ ctx.rotate(Math.PI * 2 / 3); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, -wheelRadius * 0.9); ctx.stroke(); } ctx.restore(); }); ctx.restore(); }
@@ -618,14 +688,26 @@
         const keys = {};
         function handleInput() {
             if (gameIsOver) return;
-            if (gameState === 'platformer' || gameState === 'takeoff') { if (keys.left) stickman.vx = -stickman.MOVE_SPEED; else if (keys.right) stickman.vx = stickman.MOVE_SPEED; else stickman.vx = 0; }
+            // --- START OF CHANGES ---
+            if (gameState === 'platformer' || gameState === 'takeoff' || gameState === 'boardingTank') { 
+                if (keys.left) stickman.vx = -stickman.MOVE_SPEED; else if (keys.right) stickman.vx = stickman.MOVE_SPEED; else stickman.vx = 0; 
+            }
+            // --- END OF CHANGES ---
             else if (gameState === 'flying' || gameState === 'landing') { if (keys.left) playerPlane.vx = -playerPlane.speed; else if (keys.right) playerPlane.vx = playerPlane.speed; else playerPlane.vx = 0; if (keys.up) playerPlane.vy = -playerPlane.speed; else if (keys.down) playerPlane.vy = playerPlane.speed; else playerPlane.vy = 0; }
             else if (gameState === 'tank') { if (keys.left) tank.vx = -tank.speed; else if (keys.right) tank.vx = tank.speed; else tank.vx = 0; }
         }
         window.addEventListener('keydown', (e) => { startMusicIfNeeded(); if (gameIsOver) { if (e.key === 'Enter') saveScoreButton.click(); return; } keys[e.key.toLowerCase().replace('arrow','')] = true; if (e.key === ' ') { e.preventDefault(); handleInputForJump(); } });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase().replace('arrow','')] = false; });
         function buttonPress(id, isPressed) { startMusicIfNeeded(); let keyName = id.replace('Button',''); if (keyName === 'jump') { if(isPressed) handleInputForJump(); return; } if (gameState === 'tank' && (keyName === 'up' || keyName === 'down')) return; keys[keyName] = isPressed; }
-        function handleInputForJump() { if ((gameState === 'platformer' || gameState === 'takeoff') && !stickman.isJumping) { stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isSfxMuted) { jumpSound.currentTime = 0; jumpSound.play(); } } else if (gameState === 'flying' || gameState === 'landing' || gameState === 'tank') shoot(); }
+        // --- START OF CHANGES ---
+        function handleInputForJump() { 
+            if ((gameState === 'platformer' || gameState === 'takeoff' || gameState === 'boardingTank') && !stickman.isJumping) { 
+                stickman.vy = stickman.JUMP_POWER; stickman.isJumping = true; if (!isSfxMuted) { jumpSound.currentTime = 0; jumpSound.play(); } 
+            } else if (gameState === 'flying' || gameState === 'landing' || gameState === 'tank') {
+                shoot(); 
+            }
+        }
+        // --- END OF CHANGES ---
         ['touchstart', 'mousedown'].forEach(evt => { ['leftButton', 'rightButton', 'jumpButton', 'upButton', 'downButton'].forEach(id => { document.getElementById(id).addEventListener(evt, (e) => { e.preventDefault(); buttonPress(id, true); }); }); });
         ['touchend', 'mouseup', 'mouseleave', 'touchcancel'].forEach(evt => { ['leftButton', 'rightButton', 'jumpButton', 'upButton', 'downButton'].forEach(id => { document.getElementById(id).addEventListener(evt, (e) => { e.preventDefault(); buttonPress(id, false); }); }); });
 
