@@ -227,7 +227,7 @@
         const highScoreList = document.getElementById('highScoreList');
         const newHighScoreDiv = document.getElementById('newHighScore');
         const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
-
+        
         const musicMuteButton = document.getElementById('musicMuteButton');
         const sfxMuteButton = document.getElementById('sfxMuteButton');
 
@@ -258,16 +258,14 @@
 
         const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, isVisible: true };
         const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false, isLandingGearDown: false };
+        const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 30000 };
+        // --- START OF CHANGES ---
+        const codeBannerPlane = { x: -400, y: 100, width: 100, height: 30, speed: 3, bannerText: "CODE: LVLUP", isVisible: false };
+        // --- END OF CHANGES ---
         const tank = { x: 300, y: 450, width: 120, height: 50, vx: 0, speed: 3, isVisible: false, barrelLength: 50, wheelRotation: 0 };
         const ufo = { x: CANVAS_WIDTH / 2, y: 50, width: 180, height: 70, vx: 2, isVisible: false, health: 10, maxHealth: 10, color: '#757575'};
         const ghostFormation = { x: 100, y: 120, vx: 1, vy: 20, stepDown: false, width: 0 };
         
-        // --- START OF CHANGES ---
-        const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 15000 };
-        const victoryPlane = { x: -600, y: 100, width: 100, height: 30, speed: 3, bannerText: "Access Code: 2017", isVisible: false };
-        let hasVictoryPlaneFlown = false;
-        // --- END OF CHANGES ---
-
         let bullets = [], ghosts = [], platforms = [], clouds = [], explosions = [], ufoBombs = [];
         let cameraX = 0, score = 0, farthestPlatformX = 0, castle = null;
         let gameIsOver = false, currentLevel = 1, isMusicStarted = false;
@@ -285,6 +283,8 @@
             musicMuteButton.innerText = isMusicMuted ? '🎵' : '🎶';
             if (!isMusicMuted && !isMusicStarted) {
                 startMusicIfNeeded();
+            } else if (isMusicMuted) {
+                bgMusic.pause();
             }
         });
 
@@ -308,13 +308,19 @@
             clouds.forEach(c => c.x -= c.speed); clouds = clouds.filter(c => c.x + c.radius * 2 > 0); if (Math.random() < 0.007) spawnCloud();
             if (gameState === 'platformer') { 
                 updatePlatformer(); 
-                updateBannerPlane(deltaTime);
-                updateVictoryPlane(deltaTime);
-            } 
-            else if (gameState === 'takeoff') updateTakeoff();
-            else if (gameState === 'flying') updateFlying();
-            else if (gameState === 'landing') updateLanding();
-            else if (gameState === 'tank') { updateTank(); }
+                updateBannerPlane(deltaTime); 
+            } else if (gameState === 'takeoff') {
+                updateTakeoff();
+            } else if (gameState === 'flying') {
+                updateFlying();
+            } else if (gameState === 'landing') {
+                updateLanding();
+            } else if (gameState === 'tank') { 
+                updateTank(); 
+                // --- START OF CHANGES ---
+                updateCodeBannerPlane(deltaTime);
+                // --- END OF CHANGES ---
+            }
         }
         function updatePlatformer() {
             stickman.vy += stickman.GRAVITY; stickman.x += stickman.vx; stickman.y += stickman.vy;
@@ -418,12 +424,10 @@
                         if (!isSfxMuted) explosionSound.play();
                         triggerExplosion(ufo.x + ufo.width/2, ufo.y + ufo.height/2);
                         ufo.isVisible = false; tank.isVisible = false;
+                        // --- START OF CHANGES ---
+                        triggerCodeBannerPlane();
+                        // --- END OF CHANGES ---
                         setTimeout(() => {
-                            if (!hasVictoryPlaneFlown) {
-                                victoryPlane.isVisible = true;
-                                victoryPlane.x = -600;
-                                hasVictoryPlaneFlown = true;
-                            }
                             stickman.x = tank.x + tank.width / 2;
                             stickman.y = tank.y - stickman.height;
                             gameState = 'platformer';
@@ -450,19 +454,34 @@
             }
         }
         function updateBannerPlane(deltaTime) {
+            // --- START OF CHANGES ---
+            // Set interval based on game state for more frequent planes
+            bannerPlane.interval = (gameState === 'platformer') ? 10000 : 30000;
+            // --- END OF CHANGES ---
+
             if (!bannerPlane.isVisible) {
                 bannerPlane.timer += deltaTime;
-                if (bannerPlane.timer >= bannerPlane.interval) { bannerPlane.isVisible = true; bannerPlane.timer = 0; bannerPlane.x = -400; bannerPlane.y = 80 + Math.random() * 120; }
-            } else { bannerPlane.x += bannerPlane.speed; if (bannerPlane.x > CANVAS_WIDTH + 400) bannerPlane.isVisible = false; }
+                if (bannerPlane.timer >= bannerPlane.interval) { 
+                    bannerPlane.isVisible = true; 
+                    bannerPlane.timer = 0; 
+                    bannerPlane.x = -350; 
+                    bannerPlane.y = 80 + Math.random() * 120; 
+                }
+            } else { 
+                bannerPlane.x += bannerPlane.speed; 
+                if (bannerPlane.x > CANVAS_WIDTH + 350) bannerPlane.isVisible = false; 
+            }
         }
-        function updateVictoryPlane(deltaTime) {
-            if (victoryPlane.isVisible) {
-                victoryPlane.x += victoryPlane.speed;
-                if (victoryPlane.x > CANVAS_WIDTH + 600) {
-                    victoryPlane.isVisible = false;
+        // --- START OF CHANGES ---
+        function updateCodeBannerPlane(deltaTime) {
+            if (codeBannerPlane.isVisible) {
+                codeBannerPlane.x += codeBannerPlane.speed;
+                if (codeBannerPlane.x > CANVAS_WIDTH + 350) {
+                    codeBannerPlane.isVisible = false;
                 }
             }
         }
+        // --- END OF CHANGES ---
         function updateExplosions(deltaTime) { for(let i = explosions.length - 1; i >= 0; i--) { const p = explosions[i]; p.x += p.vx; p.y += p.vy; p.life -= deltaTime; if(p.life <= 0) explosions.splice(i, 1); } }
         function clearAllEntities() { platforms = []; ghosts = []; bullets = []; ufoBombs = []; explosions = []; castle = null; }
         function prepareTakeoffLevel() {
@@ -511,30 +530,21 @@
             const initialHealth = (currentLevel >= 4) ? 3 : 2;
             for(let r = 0; r < rows; r++) { for(let c = 0; c < cols; c++) { const color = ['#ff0000', '#00ffde', '#ffb8de', '#ffb800'][r % 4]; ghosts.push({ x: ghostFormation.x + c * spacing, y: ghostFormation.y + r * spacing, width: 39, height: 39, speed: 1, color: color, health: initialHealth }); } }
         }
+        // --- START OF CHANGES ---
+        function triggerCodeBannerPlane() {
+            codeBannerPlane.isVisible = true;
+            codeBannerPlane.x = -350;
+            codeBannerPlane.y = 100 + Math.random() * 100;
+        }
+        // --- END OF CHANGES ---
         function triggerExplosion(x, y) { for (let i = 0; i < 25; i++) { const angle = Math.random() * Math.PI * 2; const speed = 2 + Math.random() * 4; explosions.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 600 + Math.random() * 400, color: ['red', 'orange', 'yellow'][Math.floor(Math.random()*3)] }); } }
         function draw() {
             ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT); drawClouds();
-            
-            if (gameState === 'tank') { 
-                drawPlatforms(); 
-                if (tank.isVisible) drawTank(); 
-                ghosts.forEach(drawGhost); 
-                bullets.forEach(drawBullet); 
-                if (ufo.isVisible) { drawUfo(); drawUfoBombs(); } 
-            } else { 
-                ctx.save(); 
-                if (gameState === 'platformer') ctx.translate(-cameraX, 0); 
-                
-                if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
-                if (victoryPlane.isVisible && gameState === 'platformer') drawVictoryPlane();
-                
-                drawPlatforms(); 
-                if (castle) drawCastle(); 
-                if (playerPlane.isVisible) drawPlayerPlane(); 
-                if (stickman.isVisible) drawStickman(); 
-                if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); } 
-                ctx.restore(); 
-            }
+            // --- START OF CHANGES ---
+            if (bannerPlane.isVisible && gameState === 'platformer') drawBannerPlane();
+            if (codeBannerPlane.isVisible) drawCodeBannerPlane();
+            // --- END OF CHANGES ---
+            if (gameState === 'tank') { drawPlatforms(); if (tank.isVisible) drawTank(); ghosts.forEach(drawGhost); bullets.forEach(drawBullet); if (ufo.isVisible) { drawUfo(); drawUfoBombs(); } } else { ctx.save(); if (gameState === 'platformer') ctx.translate(-cameraX, 0); drawPlatforms(); if (castle) drawCastle(); if (playerPlane.isVisible) drawPlayerPlane(); if (stickman.isVisible) drawStickman(); if (gameState === 'flying' || gameState === 'landing') { ghosts.forEach(drawGhost); bullets.forEach(drawBullet); } ctx.restore(); }
             drawHUD(); drawExplosions();
         }
         function drawTank() { ctx.save(); ctx.translate(tank.x, tank.y); const bodyGrad = ctx.createLinearGradient(0, 0, 0, tank.height); bodyGrad.addColorStop(0, '#4a00e0'); bodyGrad.addColorStop(1, '#8e2de2'); ctx.fillStyle = bodyGrad; ctx.beginPath(); ctx.moveTo(0, tank.height); ctx.lineTo(10, 10); ctx.lineTo(tank.width - 10, 10); ctx.lineTo(tank.width, tank.height); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(173, 216, 230, 0.5)'; ctx.strokeStyle = '#ADD8E6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(tank.width / 2, 10, tank.width / 3, Math.PI, 2 * Math.PI); ctx.fill(); ctx.stroke(); const barrelX = tank.width / 2; ctx.fillStyle = '#6c7a89'; ctx.fillRect(barrelX - 5, -tank.barrelLength, 10, tank.barrelLength); const wheelRadius = 20; const wheelPositions = [tank.width * 0.2, tank.width * 0.8]; wheelPositions.forEach(posX => { ctx.save(); ctx.translate(posX, tank.height); ctx.rotate(tank.wheelRotation); ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#8e2de2'; ctx.beginPath(); ctx.arc(0, 0, wheelRadius * 0.6, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#4a00e0'; ctx.lineWidth = 3; for(let i = 0; i < 3; i++){ ctx.rotate(Math.PI * 2 / 3); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0, -wheelRadius * 0.9); ctx.stroke(); } ctx.restore(); }); ctx.restore(); }
@@ -548,55 +558,50 @@
         function drawExplosions() { explosions.forEach(p => { ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 5, 5); }); }
         function spawnCastle() { const cX = farthestPlatformX + 200, cBY = MAX_Y_LEVEL, cW = 300 + Math.random() * 150, mKH = 150 + Math.random() * 100, lTH = mKH + 50 + Math.random() * 100, rTH = mKH + 50 + Math.random() * 100, lTW = cW * (0.25+Math.random()*0.1), rTW = cW * (0.25+Math.random()*0.1), kX = cX + lTW, kW = cW - lTW - rTW, gW = kW * 0.4, gH = mKH * 0.6; castle = { x: cX, y: cBY, width: cW, mainKeep: { h: mKH }, leftTower: { x: cX, y: cBY - lTH, w: lTW, h: lTH }, rightTower: { x: cX + cW - rTW, y: cBY - rTH, w: rTW, h: rTH }, gate: { x: kX + (kW-gW)/2, y: cBY - gH, w: gW, h: gH } }; platforms.push({ x: castle.x, y: castle.y, width: castle.width, height: PLATFORM_HEIGHT * 2, color: currentPlatformColor }); farthestPlatformX = castle.x + castle.width; }
         function drawCastle() { if (!castle) return; ctx.fillStyle = '#A9A9A9'; ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 3; const kX=castle.leftTower.x+castle.leftTower.w, kY=castle.y-castle.mainKeep.h, kW=castle.rightTower.x-kX; ctx.fillRect(kX,kY,kW,castle.mainKeep.h); ctx.strokeRect(kX,kY,kW,castle.mainKeep.h); ctx.fillRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.strokeRect(castle.leftTower.x,castle.leftTower.y,castle.leftTower.w,castle.leftTower.h); ctx.fillRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.strokeRect(castle.rightTower.x,castle.rightTower.y,castle.rightTower.w,castle.rightTower.h); ctx.fillStyle='#6B4226'; ctx.fillRect(castle.gate.x,castle.gate.y,castle.gate.w,castle.gate.h); }
+        function drawBannerPlane() { ctx.save(); ctx.translate(bannerPlane.x, bannerPlane.y); ctx.fillStyle='#F5F5DC'; ctx.strokeStyle='black'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.font='14px "Press Start 2P"'; ctx.textAlign='center'; ctx.fillText(bannerPlane.bannerText,-150,38); ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); ctx.restore(); }
         // --- START OF CHANGES ---
-        function drawBannerPlane() { 
-            ctx.save(); 
-            ctx.translate(bannerPlane.x, bannerPlane.y); 
-            ctx.fillStyle='#F5F5DC'; 
-            ctx.strokeStyle='black'; 
-            ctx.lineWidth=2; 
-            ctx.beginPath(); 
-            ctx.moveTo(-10,15); ctx.lineTo(-280,5); ctx.lineTo(-290,45); ctx.lineTo(-20,55); ctx.closePath(); ctx.fill(); ctx.stroke(); 
-            ctx.fillStyle='black'; 
-            ctx.font='14px "Press Start 2P"'; 
-            ctx.textAlign='center'; 
-            ctx.fillText(bannerPlane.bannerText,-150,38); 
-            ctx.fillStyle='#C0C0C0'; ctx.fillRect(0,0,bannerPlane.width,bannerPlane.height); ctx.strokeRect(0,0,bannerPlane.width,bannerPlane.height); 
-            ctx.fillStyle='#87CEEB'; ctx.fillRect(bannerPlane.width-25,5,20,20); ctx.strokeRect(bannerPlane.width-25,5,20,20); 
-            ctx.fillStyle='#A9A9A9'; ctx.fillRect(20,-15,20,bannerPlane.height+30); ctx.strokeRect(20,-15,20,bannerPlane.height+30); 
-            ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-20,0); ctx.lineTo(0,-20); ctx.closePath(); ctx.fill(); ctx.stroke(); 
-            ctx.fillStyle='black'; ctx.fillRect(playerPlane.width,12,15,6); 
-            ctx.restore(); 
-        }
-
-        function drawVictoryPlane() {
+        function drawCodeBannerPlane() {
+            const plane = codeBannerPlane;
             ctx.save();
-            ctx.translate(victoryPlane.x, victoryPlane.y);
-            
-            ctx.fillStyle = '#FFFFE0'; 
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 2;
+            ctx.translate(plane.x, plane.y);
+            // Banner
+            ctx.fillStyle='#FFFF00'; // Bright yellow banner
+            ctx.strokeStyle='black';
+            ctx.lineWidth=2;
             ctx.beginPath();
-            ctx.moveTo(-10, 15);
-            ctx.lineTo(-320, 5);
-            ctx.lineTo(-330, 45);
-            ctx.lineTo(-20, 55);
+            ctx.moveTo(-10,15);
+            ctx.lineTo(-280,5);
+            ctx.lineTo(-290,45);
+            ctx.lineTo(-20,55);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
-            
-            ctx.fillStyle = 'black';
-            ctx.font = '16px "Press Start 2P"';
-            ctx.textAlign = 'center';
-            ctx.fillText(victoryPlane.bannerText, -170, 38);
-
-            const planeGrad = ctx.createLinearGradient(0, 0, victoryPlane.width, 0);
-            planeGrad.addColorStop(0, '#ff4136'); planeGrad.addColorStop(0.2, '#ff851b'); planeGrad.addColorStop(0.4, '#ffd700'); planeGrad.addColorStop(0.6, '#2ecc40'); planeGrad.addColorStop(0.8, '#0074d9'); planeGrad.addColorStop(1, '#b10dc9');
-            ctx.fillStyle = planeGrad;
-            ctx.fillRect(0, 0, victoryPlane.width, victoryPlane.height);
-            ctx.strokeRect(0, 0, victoryPlane.width, victoryPlane.height);
-            ctx.fillStyle = '#87CEEB'; ctx.fillRect(victoryPlane.width - 25, 5, 20, 20); ctx.strokeRect(victoryPlane.width - 25, 5, 20, 20); ctx.fillStyle = '#A9A9A9'; ctx.fillRect(20, -15, 20, victoryPlane.height + 30); ctx.strokeRect(20, -15, 20, victoryPlane.height + 30);
-            
+            ctx.fillStyle='red'; // Red text
+            ctx.font='14px "Press Start 2P"';
+            ctx.textAlign='center';
+            ctx.fillText(plane.bannerText,-150,38);
+            // Plane Body
+            ctx.fillStyle='#FF69B4'; // Hot pink body
+            ctx.fillRect(0,0,plane.width,plane.height);
+            ctx.strokeRect(0,0,plane.width,plane.height);
+            // Cockpit
+            ctx.fillStyle='#00FFFF'; // Cyan cockpit
+            ctx.fillRect(plane.width-25,5,20,20);
+            ctx.strokeRect(plane.width-25,5,20,20);
+            // Tail
+            ctx.fillStyle='#39FF14'; // Neon green tail
+            ctx.fillRect(20,-15,20,plane.height+30);
+            ctx.strokeRect(20,-15,20,plane.height+30);
+            // Wing and Propeller
+            ctx.beginPath();
+            ctx.moveTo(0,0);
+            ctx.lineTo(-20,0);
+            ctx.lineTo(0,-20);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle='black';
+            ctx.fillRect(plane.width,12,15,6);
             ctx.restore();
         }
         // --- END OF CHANGES ---
@@ -622,10 +627,9 @@
             platformingLevelStartScore = 0; currentPlatformColor = platformThemes[0]; 
             
             // --- START OF CHANGES ---
-            bannerPlane.timer = 0;
+            bannerPlane.timer = bannerPlane.interval; // Appear immediately
             bannerPlane.isVisible = false;
-            hasVictoryPlaneFlown = false;
-            victoryPlane.isVisible = false;
+            codeBannerPlane.isVisible = false;
             // --- END OF CHANGES ---
 
             stickman.x = 150; stickman.y = 400; stickman.vx = 0; stickman.vy = 0; stickman.isJumping = false;
