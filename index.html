@@ -170,6 +170,14 @@
             align-items: center;
             justify-content: center;
         }
+        
+        /* --- START OF CHANGES --- */
+        .muted {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            color: #aaa !important;
+        }
+        /* --- END OF CHANGES --- */
 
         #backButton { position: absolute; top: 15px; left: 15px; padding: 10px 15px; background: rgba(0,0,0,0.3); color: white; text-decoration: none; border: 2px solid white; border-radius: 5px; font-size: 1em; font-family: 'Press Start 2P', sans-serif; cursor: pointer; z-index: 15; user-select: none; }
         #closeLeaderboardButton { position: absolute; top: 15px; right: 20px; background: transparent; border: 2px solid white; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 28px; line-height: 36px; text-align: center; cursor: pointer; z-index: 21; font-family: Arial, sans-serif; padding: 0; }
@@ -259,7 +267,9 @@
         const stickman = { x: 150, y: 400, width: 25, height: 50, vx: 0, vy: 0, GRAVITY: 0.5, JUMP_POWER: -13.5, MOVE_SPEED: 5, isJumping: false, isVisible: true };
         const playerPlane = { x: 0, y: 0, width: 100, height: 30, vx: 0, vy: 0, speed: 4, isVisible: false, isLandingGearDown: false };
         const bannerPlane = { x: -400, y: 150, width: 100, height: 30, speed: 2.5, bannerText: "", isVisible: false, timer: 0, interval: 30000 };
-        const codeBannerPlane = { x: -400, y: 100, width: 100, height: 30, speed: 3, bannerText: "CODE: LVLUP", isVisible: false };
+        // --- START OF CHANGES ---
+        const codeBannerPlane = { x: -400, y: 100, width: 100, height: 30, speed: 3, bannerText: "Access Code: 2017", isVisible: false };
+        // --- END OF CHANGES ---
         const tank = { x: 300, y: 450, width: 120, height: 50, vx: 0, speed: 3, isVisible: false, barrelLength: 50, wheelRotation: 0 };
         const ufo = { x: CANVAS_WIDTH / 2, y: 50, width: 180, height: 70, vx: 2, isVisible: false, health: 10, maxHealth: 10, color: '#757575'};
         const ghostFormation = { x: 100, y: 120, vx: 1, vy: 20, stepDown: false, width: 0 };
@@ -275,10 +285,12 @@
 
         function startMusicIfNeeded() { if (!isMusicStarted && !isMusicMuted) { bgMusic.play().catch(e => {}); isMusicStarted = true; } }
         
+        // --- START OF CHANGES ---
         musicMuteButton.addEventListener('click', () => {
             isMusicMuted = !isMusicMuted;
             bgMusic.muted = isMusicMuted;
-            musicMuteButton.innerText = isMusicMuted ? '🎵' : '🎶';
+            musicMuteButton.classList.toggle('muted', isMusicMuted); // Toggle CSS class
+
             if (!isMusicMuted && isMusicStarted) {
                 bgMusic.play().catch(e => {});
             } else if (isMusicMuted) {
@@ -289,8 +301,9 @@
         sfxMuteButton.addEventListener('click', () => {
             isSfxMuted = !isSfxMuted;
             sfxSounds.forEach(s => s.muted = isSfxMuted);
-            sfxMuteButton.innerText = isSfxMuted ? '🔇' : '🔊';
+            sfxMuteButton.classList.toggle('muted', isSfxMuted); // Toggle CSS class
         });
+        // --- END OF CHANGES ---
 
         closeLeaderboardButton.addEventListener('click', () => { resetGame(); });
 
@@ -302,10 +315,7 @@
         }
         function update(deltaTime) {
             updateExplosions(deltaTime); 
-            // --- START OF CHANGES ---
-            // The code plane is updated globally so it persists across levels
             updateCodeBannerPlane(deltaTime);
-            // --- END OF CHANGES ---
             if (gameIsOver) { return; } 
             clouds.forEach(c => c.x -= c.speed); clouds = clouds.filter(c => c.x + c.radius * 2 > 0); if (Math.random() < 0.007) spawnCloud();
             if (gameState === 'platformer') { 
@@ -424,10 +434,7 @@
                         triggerExplosion(ufo.x + ufo.width/2, ufo.y + ufo.height/2);
                         ufo.isVisible = false; tank.isVisible = false;
                         
-                        // --- START OF CHANGES ---
-                        // Trigger plane after explosion starts, to give it time to be seen.
                         setTimeout(() => triggerCodeBannerPlane(), 800);
-                        // --- END OF CHANGES ---
 
                         setTimeout(() => {
                             stickman.x = tank.x + tank.width / 2;
@@ -456,10 +463,7 @@
             }
         }
         function updateBannerPlane(deltaTime) {
-            // --- START OF CHANGES ---
-            // Don't run the regular banner plane if the special code plane is active
             if (codeBannerPlane.isVisible) return;
-            // --- END OF CHANGES ---
 
             bannerPlane.interval = (gameState === 'platformer') ? 10000 : 30000;
 
